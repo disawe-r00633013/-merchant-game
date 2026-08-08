@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>商旅人生 V5.2：情報商戰</title>
+<style>
+:root{
+ --bg:#f3f5f8;--panel:#fff;--text:#1f2937;--muted:#6b7280;--line:#e5e7eb;
+ --accent:#2563eb;--good:#15803d;--bad:#b91c1c;--warn:#a16207;--purple:#6d28d9;
+ --soft:#f8fafc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;color:var(--text)}
+.wrap{max-width:1380px;margin:auto;padding:16px}
+h1{margin:0;font-size:28px}.sub{margin:5px 0 14px;color:var(--muted);line-height:1.5}
+.stats{display:grid;grid-template-columns:repeat(8,1fr);gap:9px;margin-bottom:13px}
+.stat,.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 3px 12px rgba(0,0,0,.04)}
+.stat{padding:11px}.label{font-size:11px;color:var(--muted)}.value{font-size:19px;font-weight:800;margin-top:3px}
+.main{display:grid;grid-template-columns:2.05fr 1fr;gap:14px}.card{padding:14px}
+h2{font-size:17px;margin:0 0 9px}
+.cityGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.cityCard{padding:11px;border-radius:12px;background:#f8fafc;border:1px solid var(--line);cursor:pointer;min-height:108px}
+.cityCard.active{background:#eaf2ff;border-color:#93c5fd}
+.cityCard b{display:block;margin-bottom:4px}.citySpec{font-size:11px;color:#475569;line-height:1.4}
+table{width:100%;border-collapse:collapse}th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle}
+th{font-size:12px;color:var(--muted)}td:first-child,th:first-child{text-align:left}
+button{border:0;border-radius:9px;padding:7px 10px;font-weight:700;cursor:pointer}
+.buy{background:#dbeafe;color:#1d4ed8}.sell{background:#dcfce7;color:#15803d}.secondary{background:#eef2f7;color:#334155}
+.purple{background:#ede9fe;color:#6d28d9}.danger{background:#fee2e2;color:#991b1b}.action{width:100%;margin-top:7px;padding:10px;background:var(--accent);color:#fff}
+.qty{width:50px;padding:5px;border:1px solid var(--line);border-radius:7px;text-align:center}
+.small{font-size:12px;color:var(--muted);line-height:1.5}.tiny{font-size:11px;color:var(--muted);line-height:1.4}
+.good{color:var(--good);font-weight:700}.bad{color:var(--bad);font-weight:700}.warn{color:var(--warn);font-weight:700}
+.event{background:#fff8e7;border:1px solid #f5d798;border-radius:10px;padding:11px;line-height:1.55;min-height:80px}
+.choice{width:100%;display:block;margin-top:6px;background:#f3f4f6;color:#374151;text-align:left}
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}.log{height:175px;overflow:auto;background:#f8fafc;padding:8px;border-radius:9px;font-size:12px;line-height:1.55}
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.58);display:flex;align-items:center;justify-content:center;padding:20px;z-index:10}
+.start{width:min(820px,100%);background:white;border-radius:18px;padding:20px}.origins{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.origin{border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer}.origin:hover{background:#f8fbff;border-color:#93c5fd}
+.forecast{font-size:11px;line-height:1.35}.forecast.up{color:var(--good)}.forecast.down{color:var(--bad)}.forecast.flat{color:#475569}
+.infoBox{padding:10px;border-radius:10px;background:#f8fafc;border:1px solid var(--line);margin-bottom:10px}
+.infoGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.infoCell{padding:8px;border-radius:9px;background:#fff;border:1px solid var(--line);font-size:12px;line-height:1.4}
+.rankItem{display:grid;grid-template-columns:38px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.rankNum{font-size:17px;font-weight:800;text-align:center}.rankMeta{font-size:11px;color:var(--muted)}
+.nameInput{width:100%;padding:9px;border:1px solid var(--line);border-radius:9px;margin-top:8px}
+.badge{display:inline-block;background:#eef2f7;border-radius:999px;padding:2px 7px;font-size:11px;margin-top:3px}
+.bestBuy{color:#1d4ed8;font-weight:700}.bestSell{color:#a16207;font-weight:700}
+@media(max-width:1000px){.stats{grid-template-columns:repeat(4,1fr)}.main{grid-template-columns:1fr}.origins{grid-template-columns:1fr}.cityGrid{grid-template-columns:repeat(2,1fr)}.infoGrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="overlay" class="overlay">
+ <div class="start">
+  <h1>商旅人生 V5.2：情報商戰</h1>
+  <div class="sub">24 回合、約 10–15 分鐘。這版的價格有規律可分析：城市特產、季節需求、價格趨勢都會影響下一回合。</div>
+  <div class="origins">
+   <div class="origin" data-act="start" data-origin="vendor"><b>🧺 路邊小販</b><div class="small">初始資金少，但無負債。</div></div>
+   <div class="origin" data-act="start" data-origin="heir"><b>🏠 商人之子</b><div class="small">資金較多，但生活成本較高。</div></div>
+   <div class="origin" data-act="start" data-origin="debtor"><b>💸 負債商人</b><div class="small">本金高，但背負大量債務。</div></div>
+  </div>
+ </div>
+</div>
+
+<div class="wrap">
+ <h1>🧳 商旅人生 V5.2：情報商戰</h1>
+ <div class="sub">不要猜價格。觀察城市特產、季節、趨勢與跨城價差，再決定買進、囤貨或移動。</div>
+
+ <div class="stats">
+  <div class="stat"><div class="label">年齡</div><div id="age" class="value">-</div></div>
+  <div class="stat"><div class="label">季節</div><div id="time" class="value">-</div></div>
+  <div class="stat"><div class="label">城市</div><div id="city" class="value">-</div></div>
+  <div class="stat"><div class="label">現金</div><div id="cash" class="value">-</div></div>
+  <div class="stat"><div class="label">淨資產</div><div id="worth" class="value">-</div></div>
+  <div class="stat"><div class="label">行動點</div><div id="ap" class="value">-</div></div>
+  <div class="stat"><div class="label">聲望</div><div id="rep" class="value">-</div></div>
+  <div class="stat"><div class="label">店鋪</div><div id="stores" class="value">-</div></div>
+ </div>
+
+ <div class="main">
+  <section>
+   <div class="card">
+    <h2>城市特色</h2>
+    <div id="cityGrid" class="cityGrid"></div>
+
+    <div class="infoBox">
+      <b>📊 市場情報</b>
+      <div class="small" style="margin:4px 0 8px">預測是根據「季節規律＋價格回歸＋近期趨勢」計算。突發事件可能讓結果偏離，但通常不會完全顛覆基本面。</div>
+      <div id="marketIntel" class="infoGrid"></div>
+    </div>
+
+    <h2>市場</h2>
+    <table>
+      <thead>
+        <tr><th>商品</th><th>本地價格</th><th>下回合預測</th><th>持有</th><th>數量</th><th>操作</th></tr>
+      </thead>
+      <tbody id="market"></tbody>
+    </table>
+   </div>
+
+   <div class="card" style="margin-top:14px">
+    <h2>經營</h2>
+    <div id="business"></div>
+   </div>
+
+   <div class="card" style="margin-top:14px">
+    <h2>🏆 本機排行榜</h2>
+    <div class="small">結算後以最終淨資產排名。</div>
+    <div id="leaderboard"></div>
+   </div>
+  </section>
+
+  <aside>
+   <div class="card">
+    <h2>本回合事件</h2>
+    <div id="event" class="event">選擇出身開始。</div>
+    <div id="choices"></div>
+    <button class="action" data-act="end">結束回合</button>
+    <button class="action secondary" data-act="borrow">借款 $20,000</button>
+    <button class="action secondary" data-act="repay">還款 $10,000</button>
+    <button class="action danger" data-act="restart">重新開始</button>
+   </div>
+
+   <div class="card" style="margin-top:14px">
+    <h2>季節規律</h2>
+    <div class="small">
+      🌸 春：二手機新品換代，舊機偏弱；藥材需求正常。<br>
+      ☀️ 夏：咖啡與飲品需求增加；寶石較平淡。<br>
+      🍂 秋：蘋果豐收，供應增加、價格偏低。<br>
+      ❄️ 冬：玩具、藥材、寶石需求提高。
+    </div>
+   </div>
+
+   <div class="card" style="margin-top:14px">
+    <h2>角色狀態</h2><div id="status" class="small"></div>
+   </div>
+
+   <div class="card" style="margin-top:14px">
+    <h2>紀錄</h2><div id="log" class="log"></div>
+   </div>
+  </aside>
+ </div>
+</div>
+
+<script>
+const MAX=24;
+
+const GOODS=[
+ {name:"🍎 蘋果",base:120,vol:.12},
+ {name:"☕ 咖啡豆",base:260,vol:.14},
+ {name:"🧸 玩具",base:480,vol:.13},
+ {name:"📱 二手機",base:1900,vol:.16},
+ {name:"💊 藥材",base:820,vol:.14},
+ {name:"💎 寶石",base:4600,vol:.18}
+];
+
+/* city mod <1 = 當地較便宜；>1 = 當地較貴 */
+const CITIES=[
+ {
+  name:"港城",travel:700,
+  mod:[1.12,.76,1.00,.92,1.10,.94],
+  spec:"進口與轉口中心",
+  cheap:"咖啡豆、二手機",
+  expensive:"蘋果、藥材"
+ },
+ {
+  name:"山城",travel:900,
+  mod:[.72,1.08,1.05,1.22,.74,1.12],
+  spec:"農產與藥材產地",
+  cheap:"蘋果、藥材",
+  expensive:"二手機、寶石"
+ },
+ {
+  name:"科技城",travel:1200,
+  mod:[1.15,1.00,.86,.70,1.13,1.18],
+  spec:"電子與製造中心",
+  cheap:"二手機、玩具",
+  expensive:"蘋果、寶石"
+ },
+ {
+  name:"王都",travel:1500,
+  mod:[1.18,1.15,1.28,1.10,1.22,.72],
+  spec:"高消費與奢侈品市場",
+  cheap:"寶石",
+  expensive:"玩具、藥材、蘋果"
+ }
+];
+
+/* 春夏秋冬的季節效果：用「當季需求/供應」描述價格傾向 */
+const SEASON_EFFECT=[
+ [1.03,1.00,.98,.90,1.00,1.00], // 春
+ [1.02,1.10,1.02,1.00,.96,.94], // 夏
+ [.78,1.02,1.00,1.03,1.00,1.02], // 秋
+ [1.08,1.08,1.22,1.03,1.18,1.16] // 冬
+];
+
+let game=null;
+let currentChoices=[];
+
+function money(n){return "$"+Math.round(n).toLocaleString("zh-TW")}
+function rnd(a,b){return Math.random()*(b-a)+a}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function avg(g){return g.owned?g.costTotal/g.owned:0}
+function seasonIndex(round=game.round){return (round-1)%4}
+function season(){return ["春","夏","秋","冬"][seasonIndex()]}
+function nextSeasonIndex(){return game.round>=MAX?seasonIndex():game.round%4}
+function age(){return 18+Math.floor((game.round-1)/4)}
+function originName(){return game.origin==="vendor"?"路邊小販":game.origin==="heir"?"商人之子":"負債商人"}
+function used(){return game.goods.reduce((s,g)=>s+g.owned,0)}
+
+function localPrice(i,c=game.city){
+ const g=game.goods[i];
+ return Math.max(10,Math.round(g.market*CITIES[c].mod[i]*SEASON_EFFECT[seasonIndex()][i]));
+}
+
+function worth(){
+ return game.cash+game.goods.reduce((s,g,i)=>s+g.owned*localPrice(i),0)+game.stores*25000-game.debt;
+}
+
+function addLog(t,cls=""){
+ const d=document.createElement("div");
+ if(cls)d.className=cls;
+ d.textContent=`${age()}歲 ${season()}｜${t}`;
+ document.getElementById("log").prepend(d);
+}
+function useAP(){
+ if(game.ap<=0){addLog("行動點不足。","bad");return false}
+ game.ap--;return true;
+}
+
+function startGame(origin){
+ let init={cash:15000,debt:0,living:300,rep:0};
+ if(origin==="heir")init={cash:35000,debt:0,living:850,rep:8};
+ if(origin==="debtor")init={cash:50000,debt:45000,living:350,rep:-3};
+
+ game={
+   origin,round:1,city:0,cash:init.cash,debt:init.debt,living:init.living,rep:init.rep,
+   ap:3,storage:25,stores:0,staff:0,over:false,submitted:false,
+   goods:GOODS.map(g=>({...g,owned:0,costTotal:0,market:g.base,lastReturn:0}))
+ };
+ document.getElementById("overlay").style.display="none";
+ document.getElementById("log").innerHTML="";
+ setEvent("市場開張","每個城市都有固定產業結構。先看城市特色與下回合預測，再決定第一筆交易。");
+ render();
+}
+
+function forecast(i){
+ const g=game.goods[i];
+
+ // 基本面：價格偏離基準時會逐步回歸
+ const meanReversion=.09*((g.base-g.market)/g.base);
+
+ // 趨勢：上一回合趨勢有少量延續
+ const momentum=.28*g.lastReturn;
+
+ // 下一季相對本季的已知季節變化
+ const cur=SEASON_EFFECT[seasonIndex()][i];
+ const nxt=SEASON_EFFECT[nextSeasonIndex()][i];
+ const seasonal=(nxt/cur)-1;
+
+ const expected=meanReversion+momentum+seasonal;
+ const uncertainty=g.vol*.38;
+ const low=expected-uncertainty;
+ const high=expected+uncertainty;
+
+ let label="→ 盤整";
+ let cls="flat";
+ if(expected>.035){label="▲ 看漲";cls="up"}
+ else if(expected<-.035){label="▼ 看跌";cls="down"}
+
+ const confidence=Math.round(clamp(78-Math.abs(g.lastReturn)*80,58,84));
+ return {expected,low,high,label,cls,confidence};
+}
+
+function bestCities(i){
+ const prices=CITIES.map((c,ci)=>({ci,p:localPrice(i,ci)}));
+ const low=[...prices].sort((a,b)=>a.p-b.p)[0];
+ const high=[...prices].sort((a,b)=>b.p-a.p)[0];
+ return {buy:CITIES[low.ci].name,buyPrice:low.p,sell:CITIES[high.ci].name,sellPrice:high.p};
+}
+
+function setEvent(t,txt){
+ currentChoices=[];
+ document.getElementById("event").innerHTML=`<strong>${t}</strong><br>${txt}`;
+ document.getElementById("choices").innerHTML="";
+}
+function setChoiceEvent(t,txt,choices){
+ currentChoices=choices;
+ document.getElementById("event").innerHTML=`<strong>${t}</strong><br>${txt}`;
+ document.getElementById("choices").innerHTML=
+   choices.map((c,i)=>`<button class="choice" data-act="choice" data-choice="${i}">${c.label}</button>`).join("");
+}
+
+function buy(i){
+ if(game.over)return;
+ const q=Math.max(1,parseInt(document.getElementById("q"+i).value)||1);
+ if(used()+q>game.storage)return addLog("倉庫不足。","bad");
+ const cost=localPrice(i)*q;
+ if(cost>game.cash)return addLog("現金不足。","bad");
+ if(!useAP())return;
+ game.cash-=cost;game.goods[i].owned+=q;game.goods[i].costTotal+=cost;game.rep+=.2;
+ addLog(`在${CITIES[game.city].name}買入 ${game.goods[i].name} ×${q}，${money(cost)}。`);
+ render();
+}
+
+function sell(i){
+ if(game.over)return;
+ const q=Math.max(1,parseInt(document.getElementById("q"+i).value)||1),g=game.goods[i];
+ if(q>g.owned)return addLog("庫存不足。","bad");
+ if(!useAP())return;
+ const a=avg(g),rev=localPrice(i)*q,p=rev-a*q;
+ game.cash+=rev;g.owned-=q;g.costTotal-=a*q;if(g.owned===0)g.costTotal=0;
+ if(p>0)game.rep+=Math.min(2,p/5000);
+ addLog(`賣出 ${g.name}，${p>=0?"獲利":"虧損"} ${money(Math.abs(p))}。`,p>=0?"good":"bad");
+ render();
+}
+
+function travel(c){
+ if(game.over||c===game.city)return;
+ const cost=CITIES[c].travel;
+ if(game.cash<cost)return addLog("旅費不足。","bad");
+ if(!useAP())return;
+ game.cash-=cost;game.city=c;
+ addLog(`前往 ${CITIES[c].name}，旅費 ${money(cost)}。`);
+ render();
+}
+
+function openStore(){
+ const c=28000+game.stores*5000;
+ if(game.cash<c)return addLog("資金不足。","bad");
+ if(!useAP())return;
+ game.cash-=c;game.stores++;game.rep+=4;
+ addLog(`在${CITIES[game.city].name}開設店鋪。`,"good");render();
+}
+function hire(){
+ const c=11000+game.staff*3500;
+ if(game.cash<c)return addLog("資金不足。","bad");
+ if(!useAP())return;
+ game.cash-=c;game.staff++;
+ addLog("雇用一名員工。","good");render();
+}
+function expand(){
+ const c=10000+(game.storage-25)*500;
+ if(game.cash<c)return addLog("資金不足。","bad");
+ if(!useAP())return;
+ game.cash-=c;game.storage+=10;
+ addLog("倉庫擴建 10 格。","good");render();
+}
+function borrow(){
+ if(game.over)return;
+ if(game.debt>=100000)return addLog("銀行拒絕追加貸款。","bad");
+ game.cash+=20000;game.debt+=20000;addLog("借款 $20,000。","warn");render();
+}
+function repay(){
+ if(game.over)return;
+ const a=Math.min(10000,game.debt);
+ if(a<=0)return addLog("目前沒有負債。");
+ if(game.cash<a)return addLog("現金不足。","bad");
+ game.cash-=a;game.debt-=a;addLog(`償還 ${money(a)}。`,"good");render();
+}
+
+/* 市場更新：主要由可預測的基本面決定，亂數只佔較小比例 */
+function updateMarket(){
+ game.goods.forEach((g,i)=>{
+   const meanReversion=.09*((g.base-g.market)/g.base);
+   const momentum=.28*g.lastReturn;
+   const noise=rnd(-g.vol*.32,g.vol*.32);
+   const ret=clamp(meanReversion+momentum+noise,-.22,.22);
+   g.market=Math.max(g.base*.45,Math.round(g.market*(1+ret)));
+   g.lastReturn=ret;
+ });
+}
+
+function randomEvent(){
+ const roll=Math.random();
+
+ // 約 45% 沒有突發事件，讓預測更有價值
+ if(roll<.45){
+   setEvent("市場照基本面運作","本季沒有重大突發消息，價格主要依季節與趨勢變化。");
+   return;
+ }
+
+ const pool=[
+  ()=>{
+   game.goods[1].market=Math.round(game.goods[1].market*1.12);
+   setEvent("☕ 港口延誤","咖啡豆到貨延誤，短期價格額外上升約 12%。");
+  },
+  ()=>{
+   game.goods[3].market=Math.round(game.goods[3].market*.90);
+   setEvent("📱 大量換機","企業汰換設備，二手機供應增加，價格短期下降。");
+  },
+  ()=>{
+   game.goods[4].market=Math.round(game.goods[4].market*1.10);
+   setEvent("💊 養生新聞","藥材需求短期增加。");
+  },
+  ()=>{
+   const bonus=Math.max(1200,Math.min(5000,Math.round(game.cash*.05)));
+   game.cash+=bonus;
+   setEvent("🎁 商業補助",`你取得 ${money(bonus)} 的地方商業補助。`);
+   addLog(`獲得補助 ${money(bonus)}。`,"good");
+  },
+  ()=>{
+   game.ap+=1;
+   setEvent("🤝 熟客幫忙","熟客幫你處理一批雜務，本回合 +1 行動點。");
+  },
+  ()=>{
+   setChoiceEvent("🏛️ 商業博覽會","花 $2,500 參展，可以提高聲望。",[
+    {label:"參展（$2,500，聲望 +5）",run:()=>{
+      if(game.cash<2500)return addLog("現金不足。","bad");
+      game.cash-=2500;game.rep+=5;addLog("參加博覽會，聲望 +5。","good");
+    }},
+    {label:"不參加",run:()=>addLog("保留資金，繼續自己的交易計畫。")}
+   ]);
+  },
+  ()=>{
+   setChoiceEvent("📦 限時批發單","有人願意用低價出清一批貨。資訊顯示成功轉售機率偏高，但仍有風險。",[
+    {label:"投入 $4,000",run:()=>{
+      if(game.cash<4000)return addLog("現金不足。","bad");
+      game.cash-=4000;
+      if(Math.random()<.68){game.cash+=8500;addLog("轉售成功，拿回 $8,500。","good")}
+      else addLog("貨物滯銷，損失投入資金。","bad");
+    }},
+    {label:"拒絕",run:()=>addLog("不做資訊不足的生意。")}
+   ]);
+  }
+ ];
+ pool[Math.floor(Math.random()*pool.length)]();
+}
+
+function endRound(){
+ if(!game||game.over)return;
+
+ const income=game.stores*(3200+game.staff*700);
+ if(income){game.cash+=income;addLog(`店鋪收入 ${money(income)}。`,"good")}
+
+ game.cash-=game.living;
+ if(game.cash<0){game.debt+=Math.abs(game.cash);game.cash=0;addLog("生活費不足，債務增加。","bad")}
+
+ if(game.debt>0){
+   const it=Math.round(game.debt*.025);
+   game.debt+=it;addLog(`利息增加 ${money(it)}。`,"warn");
+ }
+
+ if(game.round>=MAX){finish();return}
+
+ updateMarket();
+ game.round++;
+ game.ap=3+Math.floor(game.staff/2);
+ randomEvent();
+ render();
+}
+
+function finish(){
+ game.over=true;
+ const w=worth();
+ let title="普通商人";
+ if(w>=250000&&game.rep>=25&&game.stores>=2)title="🏆 商業帝國創辦人";
+ else if(w>=150000)title="💰 富豪商人";
+ else if(game.stores>=3)title="🏪 連鎖王";
+ else if(game.debt>w)title="💸 破產商人";
+
+ document.getElementById("event").innerHTML=
+ `<strong>${title}</strong><br>24 回合結束。最終淨資產 ${money(w)}。<br>
+ <input id="playerName" class="nameInput" maxlength="16" placeholder="輸入暱稱">
+ <button class="action" data-act="submitScore">送上排行榜</button>`;
+ document.getElementById("choices").innerHTML="";
+ addLog(`${title}｜${money(w)}`,w>=150000?"good":"");
+ render();
+}
+
+function getRank(){
+ try{return JSON.parse(localStorage.getItem("merchantRankV52")||"[]")}catch(e){return[]}
+}
+function saveRank(a){localStorage.setItem("merchantRankV52",JSON.stringify(a))}
+function submitScore(){
+ if(!game||!game.over||game.submitted)return;
+ const name=(document.getElementById("playerName")?.value||"匿名商人").trim()||"匿名商人";
+ const a=getRank();
+ a.push({name,worth:Math.round(worth()),rep:Math.round(game.rep),stores:game.stores,origin:originName()});
+ a.sort((x,y)=>y.worth-x.worth);
+ saveRank(a.slice(0,30));game.submitted=true;renderLeaderboard();
+ addLog("成績已加入排行榜。","good");
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function renderLeaderboard(){
+ const a=getRank(),box=document.getElementById("leaderboard");
+ if(!a.length){box.innerHTML='<div class="small" style="padding:8px 0">目前還沒有成績。</div>';return}
+ box.innerHTML=a.slice(0,10).map((r,i)=>`
+ <div class="rankItem"><div class="rankNum">${i+1}</div>
+ <div><b>${escapeHtml(r.name)}</b><div class="rankMeta">${r.origin}・聲望 ${r.rep}・${r.stores} 店</div></div>
+ <div><b>${money(r.worth)}</b></div></div>`).join("");
+}
+
+function render(){
+ if(!game)return;
+
+ document.getElementById("age").textContent=age()+"歲";
+ document.getElementById("time").textContent=season();
+ document.getElementById("city").textContent=CITIES[game.city].name;
+ document.getElementById("cash").textContent=money(game.cash);
+ document.getElementById("worth").textContent=money(worth());
+ document.getElementById("ap").textContent=game.ap;
+ document.getElementById("rep").textContent=Math.round(game.rep);
+ document.getElementById("stores").textContent=game.stores;
+
+ const cg=document.getElementById("cityGrid");
+ cg.innerHTML=CITIES.map((c,i)=>`
+  <div class="cityCard ${i===game.city?"active":""}" data-act="travel" data-city="${i}">
+   <b>${c.name}${i===game.city?" 📍":""}</b>
+   <div class="citySpec">${c.spec}<br>
+   <span class="bestBuy">低價：${c.cheap}</span><br>
+   <span class="bestSell">高價：${c.expensive}</span><br>
+   ${i===game.city?"目前所在":`旅費 ${money(c.travel)}`}
+   </div>
+  </div>`).join("");
+
+ const intel=document.getElementById("marketIntel");
+ intel.innerHTML=game.goods.map((g,i)=>{
+   const f=forecast(i),b=bestCities(i);
+   return `<div class="infoCell">
+     <b>${g.name}</b><br>
+     <span class="forecast ${f.cls}">${f.label}｜預期 ${f.expected>=0?"+":""}${(f.expected*100).toFixed(1)}%</span><br>
+     <span class="tiny">合理區間：約 ${(f.low*100).toFixed(0)}% ～ ${(f.high*100).toFixed(0)}%</span><br>
+     <span class="bestBuy">低買：${b.buy} ${money(b.buyPrice)}</span><br>
+     <span class="bestSell">高賣：${b.sell} ${money(b.sellPrice)}</span>
+   </div>`;
+ }).join("");
+
+ const tb=document.getElementById("market");
+ tb.innerHTML="";
+ game.goods.forEach((g,i)=>{
+   const f=forecast(i);
+   const tr=document.createElement("tr");
+   tr.innerHTML=`
+    <td><b>${g.name}</b><div class="tiny">成本均價 ${g.owned?money(avg(g)):"-"}</div></td>
+    <td><b>${money(localPrice(i))}</b></td>
+    <td><div class="forecast ${f.cls}"><b>${f.label}</b><br>${f.expected>=0?"+":""}${(f.expected*100).toFixed(1)}%<br><span class="tiny">信心 ${f.confidence}%</span></div></td>
+    <td>${g.owned}</td>
+    <td><input id="q${i}" class="qty" type="number" min="1" value="1"></td>
+    <td><button class="buy" data-act="buy" data-i="${i}">買</button> <button class="sell" data-act="sell" data-i="${i}">賣</button></td>`;
+   tb.appendChild(tr);
+ });
+
+ document.getElementById("business").innerHTML=`
+  <div class="row"><div><b>🏪 開店</b><div class="small">${game.stores} 間；每回合產生穩定收入</div></div><button class="purple" data-act="store">開店</button></div>
+  <div class="row"><div><b>👷 雇員工</b><div class="small">${game.staff} 人；提高店鋪收入，每 2 人 +1 AP</div></div><button class="purple" data-act="hire">雇用</button></div>
+  <div class="row"><div><b>📦 擴倉</b><div class="small">${used()} / ${game.storage}</div></div><button class="purple" data-act="expand">擴建</button></div>`;
+
+ document.getElementById("status").innerHTML=
+ `出身：${originName()}<br>
+ 負債：<b class="${game.debt>0?"bad":""}">${money(game.debt)}</b><br>
+ 生活費：${money(game.living)}/回合<br>
+ 店鋪：${game.stores}<br>
+ 員工：${game.staff}<br>
+ 倉庫：${used()}/${game.storage}<br><br>
+ <b>策略提示：</b><br>
+ 固定城市價差通常比單回合亂數更大，因此「選對城市」比猜單次漲跌更重要。`;
+
+ renderLeaderboard();
+}
+
+document.addEventListener("click",e=>{
+ const el=e.target.closest("[data-act]");if(!el)return;
+ const a=el.dataset.act;
+ if(a==="start")startGame(el.dataset.origin);
+ else if(a==="buy")buy(+el.dataset.i);
+ else if(a==="sell")sell(+el.dataset.i);
+ else if(a==="travel")travel(+el.dataset.city);
+ else if(a==="store")openStore();
+ else if(a==="hire")hire();
+ else if(a==="expand")expand();
+ else if(a==="end")endRound();
+ else if(a==="borrow")borrow();
+ else if(a==="repay")repay();
+ else if(a==="choice"){
+   const c=currentChoices[+el.dataset.choice];
+   if(c){currentChoices=[];document.getElementById("choices").innerHTML="";c.run();render()}
+ }
+ else if(a==="submitScore")submitScore();
+ else if(a==="restart")location.reload();
+});
+
+renderLeaderboard();
+</script>
+</body>
+</html>
