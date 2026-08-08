@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>商旅人生 V6.3.1：中世紀商旅</title>
+<style>
+:root{
+ --bg:#c7d8a7;--panel:#f8f4d8;--text:#2f2a1f;--muted:#6a6048;--line:#4a4132;
+ --accent:#3f6db3;--good:#2f7d32;--bad:#b23a2c;--warn:#9d6a14;--purple:#6c45a5;
+ --soft:#efe6bf;--sky:#9fd0ff;--grass:#8bbb5e;--wood:#9a6b3f;--dark:#2a241b;
+}
+*{box-sizing:border-box}
+body{
+ margin:0;color:var(--text);font-family:"Courier New",monospace;
+ background:linear-gradient(to bottom,var(--sky) 0 170px,var(--grass) 170px 250px,var(--bg) 250px 100%);
+}
+.wrap{max-width:1400px;margin:auto;padding:16px}
+h1{margin:0 0 4px;font-size:30px;letter-spacing:1px}
+.sub{color:var(--muted);line-height:1.6;margin-bottom:14px}
+.pixelBox,.card,.stat,.overlayBox{
+ background:var(--panel);border:3px solid var(--line);box-shadow:6px 6px 0 rgba(42,36,27,.25);border-radius:0;
+}
+.stats{display:grid;grid-template-columns:repeat(8,1fr);gap:9px;margin-bottom:12px}
+.stat{padding:10px}
+.label{font-size:11px;color:var(--muted);font-weight:700}
+.value{font-size:19px;font-weight:800;margin-top:4px}
+.layout{display:grid;grid-template-columns:2.1fr 1fr;gap:14px}
+.card{padding:14px}
+h2{margin:0 0 8px;font-size:18px}
+button{
+ border:3px solid var(--line);border-radius:0;padding:8px 10px;font-weight:800;cursor:pointer;
+ box-shadow:3px 3px 0 rgba(42,36,27,.24);font-family:"Courier New",monospace;background:#fff8dd;color:var(--text)
+}
+button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(42,36,27,.24)}
+button.primary{background:var(--accent);color:#fff}
+button.buy{background:#9fd0ff;color:#163f77}
+button.sell{background:#9ce19c;color:#1f5c22}
+button.warn{background:#f4d28d;color:#6d4b05}
+button.purple{background:#cab6ef;color:#4b2f7a}
+button.danger{background:#f0b0a8;color:#7d1d13}
+button.secondary{background:#ddd2aa;color:#4a3f2c}
+.mainActions{display:flex;gap:8px;flex-wrap:wrap}
+.small{font-size:12px;color:var(--muted);line-height:1.5}
+.good{color:var(--good);font-weight:700}.bad{color:var(--bad);font-weight:700}.warnTxt{color:var(--warn);font-weight:700}
+.mapWrap{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}
+.mapBoard{
+ position:relative;min-height:500px;
+ background:
+   radial-gradient(circle at 30% 25%,#8fbb69 0 10%,transparent 11%),
+   radial-gradient(circle at 65% 68%,#77a956 0 12%,transparent 13%),
+   linear-gradient(135deg,#b7cf80 0 43%,#8fb970 43% 72%,#d0c07d 72% 100%);
+ border:3px solid var(--line);overflow:hidden;
+}
+.mapBoard::before{
+ content:"";position:absolute;left:0;top:0;bottom:0;width:14%;
+ background:
+   repeating-linear-gradient(0deg,rgba(255,255,255,.15) 0 8px,rgba(70,120,150,.08) 8px 16px),
+   #75a9c7;
+ border-right:4px solid #d9c58a;
+}
+.route{
+ position:absolute;height:4px;background:#8b6f47;transform-origin:left center;border:1px solid #6d5638;
+}
+.townNode{
+ position:absolute;width:112px;min-height:88px;padding:8px 6px;background:#fff8dd;border:3px solid var(--line);
+ text-align:center;cursor:pointer;box-shadow:4px 4px 0 rgba(42,36,27,.18)
+}
+.townNode.active{background:#eaf2ff}
+.townIcon{font-size:24px;display:block}
+.townName{font-size:14px;font-weight:800}
+.townMeta{font-size:10px;color:var(--muted);line-height:1.35}
+.locTabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.pill{display:inline-block;padding:2px 7px;border:2px solid var(--line);background:#efe6bf;font-size:11px}
+.counterWrap{display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:start}
+.clerkSprite{
+ width:140px;height:170px;background:#f0d7b7;border:3px solid var(--line);position:relative;
+}
+.clerkSprite::before{
+ content:"";position:absolute;left:32px;top:12px;width:72px;height:40px;background:#5d3d23;
+ box-shadow:0 40px 0 #f0d7b7,0 82px 0 #4e85c4,0 118px 0 #4e85c4;
+}
+.clerkSprite::after{
+ content:"";position:absolute;left:52px;top:55px;width:36px;height:8px;background:#2a241b;
+ box-shadow:0 16px 0 #2a241b;
+}
+.dialogue{
+ background:#fff8dd;border:3px solid var(--line);padding:12px;line-height:1.75;min-height:180px
+}
+.dialogue b{display:block;margin-bottom:6px}
+table{width:100%;border-collapse:collapse}
+th,td{border-bottom:1px solid #8d7d60;padding:8px 6px;text-align:center}
+th{font-size:12px;color:var(--muted)}
+td:first-child,th:first-child{text-align:left}
+.qty{width:56px;border:3px solid var(--line);background:#fffdf2;padding:5px;text-align:center;font-family:"Courier New",monospace;font-weight:700}
+.flex{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.historyBox,.logBox,.rankBox{
+ max-height:220px;overflow:auto;background:#fff8dd;border:3px solid var(--line);padding:8px
+}
+.historyItem,.logItem,.rankItem{padding:7px 0;border-bottom:1px solid #cdbf9c}
+.historyItem:last-child,.logItem:last-child,.rankItem:last-child{border-bottom:0}
+.travelList{display:grid;gap:10px}
+.travelItem{
+ display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:10px;background:#fff8dd;border:3px solid var(--line)
+}
+.cart{
+ font-size:26px;margin-right:8px
+}
+.note{padding:10px;background:#f7e0a3;border:3px solid #9d6a14;line-height:1.7}
+.overlay{
+ position:fixed;inset:0;background:rgba(31,26,17,.68);display:flex;align-items:center;justify-content:center;padding:20px;z-index:20
+}
+.overlayBox{width:min(860px,100%);padding:20px}
+.originGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.originCard{padding:14px;background:var(--soft);border:3px solid var(--line);cursor:pointer}
+.originCard:hover{background:#fffbe9}
+.nameInput{width:100%;padding:10px;border:3px solid var(--line);background:#fffdf2;font-family:"Courier New",monospace;font-weight:700}
+
+.tradeRoom{
+ position:relative;
+ min-height:260px;
+ padding:16px;
+ background:
+   linear-gradient(to bottom,#c9955b 0 18%,#ead7a4 18% 72%,#b37a43 72% 100%);
+ border:3px solid var(--line);
+ overflow:hidden;
+}
+.tradeRoom::before{
+ content:"";
+ position:absolute;left:0;right:0;top:46px;height:12px;
+ background:repeating-linear-gradient(90deg,#80542f 0 34px,#6e4728 34px 68px);
+ border-top:3px solid var(--line);border-bottom:3px solid var(--line);
+}
+.tradeRoom::after{
+ content:"";
+ position:absolute;left:0;right:0;bottom:56px;height:8px;background:#5c3f27;
+}
+.counterDesk{
+ position:absolute;left:12px;right:12px;bottom:18px;height:62px;
+ background:#96633b;border:3px solid var(--line);z-index:2;
+ box-shadow:inset 0 9px 0 #b98150;
+}
+.shelf{
+ position:absolute;right:18px;top:72px;width:118px;height:96px;
+ border:3px solid var(--line);background:#8f6039;
+ box-shadow:inset 0 29px 0 #d2a56f,inset 0 58px 0 #8f6039;
+ z-index:1;
+}
+.shelf::after{
+ content:"📦  🧴\A☕  💎";
+ white-space:pre;
+ position:absolute;inset:8px;
+ font-size:20px;line-height:36px;
+}
+.npcBlock{
+ position:absolute;left:42px;bottom:74px;width:90px;height:135px;z-index:3;
+}
+.npcHead{
+ position:absolute;left:23px;top:0;width:48px;height:48px;background:#f0caa5;
+ border:3px solid var(--line);
+}
+.npcHair{
+ position:absolute;left:18px;top:-4px;width:58px;height:24px;background:#54351f;
+ border:3px solid var(--line);z-index:2;
+}
+.npcEyes{
+ position:absolute;left:34px;top:22px;width:7px;height:7px;background:#2a241b;
+ box-shadow:21px 0 0 #2a241b;z-index:4;
+}
+.npcBody{
+ position:absolute;left:12px;top:48px;width:70px;height:72px;background:#4f84bd;
+ border:3px solid var(--line);
+}
+.npcBadge{
+ position:absolute;left:48px;top:67px;width:12px;height:12px;background:#f5d35f;
+ border:2px solid var(--line);z-index:4;
+}
+.dialogueRPG{
+ position:relative;z-index:5;
+ margin-left:150px;margin-right:145px;margin-top:82px;
+ min-height:128px;background:#fff8dd;border:4px solid var(--line);
+ padding:12px 14px;box-shadow:4px 4px 0 rgba(42,36,27,.25);
+ line-height:1.75;
+}
+.speakerName{
+ position:absolute;left:10px;top:-26px;
+ background:#2f2a1f;color:#fff8dd;border:3px solid var(--line);
+ padding:3px 9px;font-weight:800;font-size:12px;
+}
+.dialogueControls{
+ display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:10px;
+}
+.dialoguePage{font-size:11px;color:var(--muted);margin-right:auto}
+.tradePrompt{
+ padding:9px;margin:10px 0;background:#efe6bf;border:3px solid var(--line);
+ font-weight:800;
+}
+.mapBoard.traveling .townNode{pointer-events:none;opacity:.8}
+.cartSprite{
+ position:absolute;z-index:15;width:48px;height:34px;
+ transform:translate(-50%,-50%);
+ transition-property:left,top;
+ transition-timing-function:linear;
+ pointer-events:none;
+ filter:drop-shadow(3px 3px 0 rgba(42,36,27,.25));
+}
+.cartSprite .horse{position:absolute;left:0;top:5px;font-size:24px;transform:scaleX(-1)}
+.cartSprite .wagon{position:absolute;left:23px;top:7px;font-size:25px}
+.travelBanner{
+ position:absolute;left:50%;top:12px;transform:translateX(-50%);
+ z-index:16;background:#fff8dd;border:3px solid var(--line);
+ padding:6px 10px;font-weight:800;box-shadow:3px 3px 0 rgba(42,36,27,.22);
+}
+.arrivalFlash{
+ animation:arrivalFlash .65s steps(2,end);
+}
+@keyframes arrivalFlash{
+ 0%,100%{background:#fff8dd}
+ 50%{background:#fff2a8}
+}
+.stationScene{
+ min-height:210px;position:relative;border:3px solid var(--line);
+ background:linear-gradient(#9fd0ff 0 42%,#8bbb5e 42% 65%,#c69a63 65% 100%);
+ padding:12px;overflow:hidden;
+}
+.stationHouse{
+ position:absolute;left:20px;bottom:38px;width:135px;height:90px;
+ background:#c88648;border:3px solid var(--line);
+}
+.stationHouse::before{
+ content:"";position:absolute;left:-10px;top:-30px;width:150px;height:34px;
+ background:#7a4b2c;border:3px solid var(--line);transform:skewX(-15deg);
+}
+.stationSign{
+ position:absolute;left:34px;bottom:92px;background:#fff8dd;border:3px solid var(--line);
+ padding:3px 8px;font-weight:800;z-index:2;
+}
+.stationCart{
+ position:absolute;right:36px;bottom:42px;font-size:46px;
+}
+.stationText{
+ position:relative;z-index:4;margin-left:175px;margin-right:100px;margin-top:38px;
+ background:#fff8dd;border:3px solid var(--line);padding:10px;line-height:1.65;
+}
+
+.terrainLabel{
+ position:absolute;z-index:2;font-size:10px;font-weight:800;
+ background:#fff8dd;border:2px solid var(--line);padding:2px 5px;opacity:.9;
+}
+.mountainRange{
+ position:absolute;z-index:1;color:#66513a;font-size:25px;letter-spacing:-7px;white-space:nowrap;
+ transform:rotate(-8deg);
+}
+.forestPatch{
+ position:absolute;z-index:1;color:#376b39;font-size:22px;letter-spacing:-8px;white-space:nowrap;
+}
+.riverLine{
+ position:absolute;z-index:1;height:7px;background:#76aacf;border:2px solid #4b768e;
+ transform-origin:left center;border-radius:50%;
+}
+.seaWave{
+ position:absolute;z-index:1;left:1.2%;color:#d8f0ff;font-size:18px;letter-spacing:2px;
+}
+.mapCompass{
+ position:absolute;right:12px;bottom:12px;z-index:5;width:62px;height:62px;
+ background:#fff8dd;border:3px solid var(--line);display:flex;align-items:center;justify-content:center;
+ font-weight:800;font-size:20px;
+}
+.mapCompass::before{content:"N";position:absolute;top:2px;font-size:10px}
+.mapCompass::after{content:"✦";font-size:28px}
+.kingdomName{
+ position:absolute;left:36%;top:45%;z-index:1;
+ font-size:18px;font-weight:800;color:rgba(72,58,37,.26);transform:rotate(-10deg);
+ letter-spacing:2px;pointer-events:none;
+}
+
+@media(max-width:760px){
+ .dialogueRPG{margin-left:112px;margin-right:8px;margin-top:76px}
+ .shelf{display:none}
+ .npcBlock{left:20px;transform:scale(.82);transform-origin:bottom left}
+ .stationText{margin:105px 8px 0 8px}
+ .stationCart{right:12px}
+}
+
+
+.jobBoard{
+ display:grid;gap:10px;margin-top:12px;
+}
+.jobCard{
+ display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;
+ padding:11px;background:#fff8dd;border:3px solid var(--line);
+}
+.jobIcon{font-size:28px;margin-right:8px}
+.jobTitle{font-weight:800}
+.jobMeta{font-size:11px;color:var(--muted);line-height:1.5;margin-top:3px}
+.jobDone{opacity:.55}
+.jobScene{
+ min-height:190px;position:relative;border:3px solid var(--line);
+ background:linear-gradient(#9fd0ff 0 38%,#8bbb5e 38% 62%,#c49a63 62% 100%);
+ padding:12px;overflow:hidden;
+}
+.jobNotice{
+ position:absolute;left:18px;top:24px;width:155px;min-height:125px;
+ background:#d8b273;border:4px solid #654626;padding:10px;
+ box-shadow:inset 0 0 0 3px #ae7d43;
+}
+.jobNotice::before{
+ content:"行會差事";display:block;text-align:center;font-weight:800;
+ padding-bottom:5px;margin-bottom:6px;border-bottom:2px solid #654626;
+}
+.jobNpc{
+ position:absolute;right:28px;bottom:28px;font-size:58px;
+}
+.jobIntro{
+ position:relative;z-index:4;margin-left:180px;margin-right:95px;margin-top:30px;
+ background:#fff8dd;border:3px solid var(--line);padding:10px;line-height:1.65;
+}
+@media(max-width:760px){
+ .jobIntro{margin:155px 6px 0 6px}
+ .jobNpc{right:8px;bottom:18px}
+}
+
+@media(max-width:1100px){
+ .stats{grid-template-columns:repeat(4,1fr)}
+ .layout{grid-template-columns:1fr}
+ .mapWrap{grid-template-columns:1fr}
+ .counterWrap{grid-template-columns:1fr}
+ .originGrid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="runtimeError" style="display:none;margin:12px;padding:12px;border:3px solid #7d1d13;background:#f8d7d2;color:#7d1d13;font-family:monospace;white-space:pre-wrap">
+  遊戲載入時發生錯誤。
+</div>
+
+<div id="overlay" class="overlay">
+  <div class="overlayBox">
+    <h1>商旅人生 V6.3.1：中世紀商旅</h1>
+    <div class="sub">你是一名中世紀旅商，往返各領地的貿易行會。櫃檯人員會告訴你未來數回合可能發生的戰事、豐收、節慶、商隊與航運消息。你可以在貿易行會買賣貨物，或到驛站搭馬車前往其他城鎮。每回合固定有 5 AP；買一次、賣一次都只算 1 個動作，不論數量多少。</div>
+    <div class="originGrid">
+      <div class="originCard" data-act="start" data-origin="vendor"><b>🧺 路邊小販</b><div class="small">現金少，但無負債，適合穩紮穩打。</div></div>
+      <div class="originCard" data-act="start" data-origin="heir"><b>🏠 商人之子</b><div class="small">初始資金高，但生活成本較高。</div></div>
+      <div class="originCard" data-act="start" data-origin="debtor"><b>💸 負債商人</b><div class="small">本金高，但債務壓力大。</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <h1>🧳 商旅人生 V6.3.1：中世紀商旅</h1>
+  <div class="sub">在中世紀幻想世界中往返港口、山谷、鐵爐城與王都。地圖會顯示海岸、山脈、森林、河流與商道；進入貿易行會後，櫃檯人員會用 RPG 對話框提供未來 1–5 回合的市場耳語。</div>
+
+  <div class="stats">
+    <div class="stat"><div class="label">年齡</div><div id="age" class="value">-</div></div>
+    <div class="stat"><div class="label">回合</div><div id="round" class="value">-</div></div>
+    <div class="stat"><div class="label">所在城鎮</div><div id="city" class="value">-</div></div>
+    <div class="stat"><div class="label">現金</div><div id="cash" class="value">-</div></div>
+    <div class="stat"><div class="label">淨資產</div><div id="worth" class="value">-</div></div>
+    <div class="stat"><div class="label">行動點</div><div id="ap" class="value">-</div></div>
+    <div class="stat"><div class="label">聲望</div><div id="rep" class="value">-</div></div>
+    <div class="stat"><div class="label">店鋪</div><div id="stores" class="value">-</div></div>
+  </div>
+
+  <div class="layout">
+    <section class="card">
+      <h2>🗺️ 世界地圖</h2>
+      <div class="mapWrap">
+        <div>
+          <div id="mapBoard" class="mapBoard"></div>
+        </div>
+        <div class="note">
+          <b>地圖說明</b><br>
+          這是一張艾爾德蘭王國的商旅地圖。海岸、山脈、森林、河流與商道都會顯示在地圖上。先點一個城鎮，每個城鎮都有：<br>
+          1. <b>貿易行會</b>：聽櫃檯人員說市場耳語，並買賣商品。<br>
+          2. <b>工作布告欄</b>：接受當地臨時差事，換取穩定但較少的收入。<br>
+          3. <b>馬車驛站</b>：搭馬車移動到其他城鎮。<br><br>
+          <b>移動規則：</b>城鎮距離不同，消耗的行動點也不同；路線上直接標示需要幾 AP，出發後會播放馬車移動動畫。<br>
+          <b>交易規則：</b>一次買入或一次賣出，不管數量多少，都只消耗 1 AP。
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="flex">
+          <h2 id="townTitle">城鎮內容</h2>
+          <span id="townBadge" class="pill">尚未選擇城鎮</span>
+        </div>
+        <div class="locTabs">
+          <button class="secondary" data-act="openPlace" data-place="trade">🏢 貿易行會</button>
+          <button class="secondary" data-act="openPlace" data-place="jobs">📜 工作布告欄</button>
+          <button class="secondary" data-act="openPlace" data-place="carriage">🛞 馬車驛站</button>
+          <button class="secondary" data-act="openPlace" data-place="history">📜 行會消息紀錄</button>
+        </div>
+
+        <div id="townContent" class="pixelBox" style="padding:12px;min-height:420px">
+          <div class="small">請先從地圖上點一個城鎮。</div>
+        </div>
+      </div>
+    </section>
+
+    <aside>
+      <div class="card">
+        <h2>📌 本回合摘要</h2>
+        <div id="turnSummary" class="note">選擇出身後開始遊戲。</div>
+        <div class="mainActions">
+          <button class="primary" data-act="end">結束回合</button>
+          <button class="warn" data-act="borrow">借款 $20,000</button>
+          <button class="secondary" data-act="repay">還款 $10,000</button>
+          <button class="danger" data-act="restart">重新開始</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2>🧾 角色狀態</h2>
+        <div id="status" class="small"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2>📓 事件紀錄</h2>
+        <div id="logBox" class="logBox"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2>🏆 本機排行榜</h2>
+        <div id="leaderboard" class="rankBox"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+window.addEventListener("error", function(ev){
+  var box=document.getElementById("runtimeError");
+  if(box){
+    box.style.display="block";
+    box.textContent="遊戲載入時發生錯誤：\n"+(ev.message||"未知錯誤");
+  }
+});
+window.addEventListener("unhandledrejection", function(ev){
+  var box=document.getElementById("runtimeError");
+  if(box){
+    box.style.display="block";
+    box.textContent="遊戲執行時發生錯誤：\n"+String(ev.reason||"未知錯誤");
+  }
+});
+
+const MAX=24;
+
+const GOOD_DESC=[
+ "領地主食，受收成、戰事與冬季需求影響最大。",
+ "保存食物不可或缺，港口與鹽場供應決定價格。",
+ "來自高地牧場與織坊，冬季與貴族訂單會推升需求。",
+ "鍛造工坊製作的農具、刀具與軍用鐵器。",
+ "藥師與修道院常用，疫病與冬季會快速拉高需求。",
+ "來自南方航路的高價貨，王室宴會與船隊到港最關鍵。"
+];
+
+const GOODS=[
+ {name:"🌾 穀物",base:90,vol:.11},
+ {name:"🧂 鹽",base:180,vol:.13},
+ {name:"🧶 羊毛布",base:420,vol:.13},
+ {name:"⚒️ 鐵器",base:980,vol:.15},
+ {name:"🌿 藥草",base:620,vol:.14},
+ {name:"🌶️ 香料",base:2300,vol:.18}
+];
+
+const CITIES=[
+ {name:"潮汐港",icon:"⚓",x:7,y:54,clerk:"米菈",spec:"海運、鹽場與外來商隊匯集地",cheap:"鹽、香料",expensive:"穀物、藥草"},
+ {name:"青嶺鎮",icon:"⛰️",x:31,y:18,clerk:"阿蘭",spec:"高地農牧、藥草與羊毛產區",cheap:"穀物、羊毛布、藥草",expensive:"鐵器、香料"},
+ {name:"鐵爐城",icon:"🔥",x:57,y:60,clerk:"諾亞",spec:"礦山、鍛造工坊與武具生產中心",cheap:"鐵器、羊毛布",expensive:"穀物、香料"},
+ {name:"金冠王都",icon:"🏰",x:80,y:17,clerk:"艾莉絲",spec:"貴族、軍隊與大型市集聚集的消費中心",cheap:"香料",expensive:"羊毛布、藥草、穀物、鐵器"}
+];
+
+// <1 當地便宜，>1 當地貴
+const CITY_MOD=[
+ [1.12,.70,1.02,1.08,1.12,.78],
+ [.72,1.12,.74,1.22,.72,1.18],
+ [1.16,1.02,.84,.68,1.10,1.20],
+ [1.20,1.16,1.24,1.18,1.22,.86]
+];
+
+const SEASON_EFFECT=[
+ [1.00,1.00,.96,1.02,1.04,1.00],  // 春：新播種，布匹略弱
+ [1.05,1.04,1.00,1.00,.92,1.08],  // 夏：藥草採收，香料航運旺
+ [.76,1.00,1.02,1.04,1.00,1.02],  // 秋：穀物收成
+ [1.18,1.12,1.18,1.12,1.20,1.16]   // 冬：糧食、衣物、藥草、香料需求上升
+];
+
+const DIST=[
+ [0,2,2,3],
+ [2,0,2,2],
+ [2,2,0,2],
+ [3,2,2,0]
+];
+
+const JOBS=[
+ [
+  {icon:"🧂",title:"搬運鹽袋",desc:"幫碼頭鹽商把鹽袋搬進倉庫。",ap:1,pay:650,rep:.2},
+  {icon:"📦",title:"卸載商船",desc:"替剛靠岸的商船卸下木箱與貨桶。",ap:2,pay:1550,rep:.4},
+  {icon:"🪶",title:"抄寫貨單",desc:"協助行會整理船貨與關稅紀錄。",ap:1,pay:850,rep:.3}
+ ],
+ [
+  {icon:"🌾",title:"莊園收割",desc:"到城外莊園幫忙收割與打穀。",ap:1,pay:600,rep:.2},
+  {icon:"🌿",title:"採集藥草",desc:"跟著採藥人到山坡尋找常用藥草。",ap:1,pay:800,rep:.3},
+  {icon:"🐴",title:"護送騾隊",desc:"陪商隊走一段山路並照看馱獸。",ap:2,pay:1700,rep:.5}
+ ],
+ [
+  {icon:"🔥",title:"拉動風箱",desc:"替鍛造工坊維持爐火與風箱。",ap:1,pay:750,rep:.2},
+  {icon:"🛞",title:"修理貨車",desc:"幫車匠更換輪軸、繩索與木板。",ap:1,pay:950,rep:.3},
+  {icon:"⚒️",title:"鍛坊夜班",desc:"在鐵匠鋪協助整理鐵料與成品。",ap:2,pay:1900,rep:.5}
+ ],
+ [
+  {icon:"📜",title:"市場跑腿",desc:"替商會與店家傳送帳單和口信。",ap:1,pay:800,rep:.3},
+  {icon:"✒️",title:"書記助手",desc:"替行會抄寫契約、貨價與庫存紀錄。",ap:1,pay:1000,rep:.4},
+  {icon:"🏰",title:"宮廷送貨",desc:"把指定貨箱送到王宮外院並取得簽收。",ap:2,pay:2100,rep:.7}
+ ]
+];
+
+const SCHEDULE_EVENTS=[
+ {id:"grain_harvest", good:0, mult:.72, title:"秋收大豐收", short:"青嶺鎮附近的莊園傳來好消息，今年穀倉正在提前擴充，地主也大量雇用收割工。"},
+ {id:"grain_war", good:0, mult:1.34, title:"邊境徵糧", short:"王都使者正沿商道徵調糧車，據說邊境駐軍需要增加數週口糧。"},
+ {id:"salt_storm", good:1, mult:1.30, title:"鹽船受阻", short:"潮汐港外海連日風浪，幾艘運鹽船延遲進港，鹽商開始惜售現貨。"},
+ {id:"salt_fair", good:1, mult:.78, title:"新鹽大量入市", short:"潮汐港鹽場今年曬鹽順利，碼頭附近已堆滿等待運往內陸的鹽袋。"},
+ {id:"wool_winter", good:2, mult:1.34, title:"王都冬衣訂單", short:"金冠王都的裁縫行收到貴族與軍營的大筆冬衣訂單，開始四處詢問羊毛布供應。"},
+ {id:"wool_surplus", good:2, mult:.78, title:"牧場剪毛旺季", short:"青嶺鎮牧場進入集中剪毛期，織坊門口堆著大量新紡好的羊毛布。"},
+ {id:"iron_war", good:3, mult:1.36, title:"軍械訂單增加", short:"鐵爐城的鍛造工坊突然延長夜班，傳言王都正在追加農具與軍械訂單。"},
+ {id:"iron_peace", good:3, mult:.76, title:"軍械庫釋出舊貨", short:"王都軍械庫準備拍賣一批舊鐵器，內陸商人已開始前往競價。"},
+ {id:"herb_plague", good:4, mult:1.38, title:"疫病傳聞", short:"北方村莊出現不明熱病，藥師開始大量收購乾燥藥草與草藥膏原料。"},
+ {id:"herb_harvest", good:4, mult:.76, title:"藥草採收順利", short:"青嶺鎮的採藥人提早下山，今年曬藥棚幾乎全滿，供貨看來相當充足。"},
+ {id:"spice_banquet", good:5, mult:1.38, title:"王室大宴", short:"金冠王都準備舉辦大型王室宴會，宮廷採購官開始向各商會詢問胡椒、丁香與其他珍貴香料。"},
+ {id:"spice_fleet", good:5, mult:.76, title:"遠洋商船抵港", short:"潮汐港瞭望塔傳來消息，一支滿載香料的南方船隊正在靠岸，碼頭倉庫已準備接貨。"}
+];
+
+let game=null;
+let selectedTown=null;
+let selectedPlace="trade";
+let futureSchedule={};
+let dialoguePage=0;
+
+function money(n){return "$"+Math.round(n).toLocaleString("zh-TW")}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function rnd(a,b){return Math.random()*(b-a)+a}
+function seasonIndex(round=game.round){return (round-1)%4}
+function season(){return ["春","夏","秋","冬"][seasonIndex()]}
+function nextSeasonIndex(){return game.round>=MAX?seasonIndex():game.round%4}
+function age(){return 18+Math.floor((game.round-1)/4)}
+function originName(){return game.origin==="vendor"?"路邊小販":game.origin==="heir"?"商人之子":"負債商人"}
+function avg(g){return g.owned?g.costTotal/g.owned:0}
+function used(){return game.goods.reduce((s,g)=>s+g.owned,0)}
+function localPrice(i,c=game.city){
+ const g=game.goods[i];
+ return Math.max(10,Math.round(g.market*CITY_MOD[c][i]*SEASON_EFFECT[seasonIndex()][i]));
+}
+function worth(){
+ return game.cash+game.goods.reduce((s,g,i)=>s+g.owned*localPrice(i),0)+game.stores*25000-game.debt;
+}
+function addLog(text,cls=""){
+ game.logs.unshift({text,cls});
+ renderLog();
+}
+function turnsAwayText(n){
+ if(n===1)return "下一回合";
+ if(n===2)return "約兩回合內";
+ if(n===3)return "約三回合內";
+ return `未來 ${n} 回合內`;
+}
+
+function buildFutureSchedule(){
+ futureSchedule={};
+ const rounds=[];
+ while(rounds.length<8){
+   const r=2+Math.floor(Math.random()*(MAX-1));
+   if(!rounds.includes(r)) rounds.push(r);
+ }
+ rounds.sort((a,b)=>a-b);
+ let usedIds=[];
+ rounds.forEach(r=>{
+   let choices=SCHEDULE_EVENTS.filter(e=>!usedIds.includes(e.id));
+   if(!choices.length){usedIds=[];choices=[...SCHEDULE_EVENTS]}
+   const ev=choices[Math.floor(Math.random()*choices.length)];
+   usedIds.push(ev.id);
+   futureSchedule[r]={...ev};
+ });
+}
+
+function scheduledEventForRound(r){return futureSchedule[r]||null}
+
+function applyScheduledEvent(r){
+ const ev=scheduledEventForRound(r);
+ if(!ev) return false;
+ const g=game.goods[ev.good];
+ g.market=Math.max(20,Math.round(g.market*ev.mult));
+ game.turnSummary = `本回合市場重點：${ev.title}，${g.name}${ev.mult>1?"價格上升":"價格下跌"}。`;
+ addLog(`${ev.title}：${g.name}${ev.mult>1?"價格上升":"價格下跌"}。`,ev.mult>1?"warnTxt":"");
+ return true;
+}
+
+function generateMarketRumor(){
+ const upcoming=[];
+ for(let d=1;d<=5;d++){
+   const r=game.round+d;
+   if(r>MAX)break;
+   const ev=scheduledEventForRound(r);
+   if(ev) upcoming.push({d,ev});
+ }
+ const nextS=["春","夏","秋","冬"][nextSeasonIndex()];
+ const seasonHints={
+   "春":"春耕開始後，各領地多把銀幣投入種子、農具與牲口；羊毛布的需求通常暫時較弱。",
+   "夏":"夏季商道較容易通行，潮汐港的遠洋船隊也更加活躍；山區藥草則進入採收季。",
+   "秋":"青嶺鎮與周邊莊園進入秋收，穀物供應通常大幅增加，是囤糧前最值得注意的時節。",
+   "冬":"寒冬會推高糧食、羊毛布與藥草需求；王都的節慶宴會也常讓香料價格轉強。"
+ };
+ let pieces=[];
+ if(upcoming.length){
+   upcoming.slice(0,3).forEach(({d,ev},idx)=>{
+     const lead=idx===0?"櫃檯人員低聲告訴你":"她又補充說";
+     pieces.push(`${lead}，${turnsAwayText(d)}，${ev.short}`);
+   });
+ }else{
+   pieces.push("櫃檯人員翻了翻今日的貨運單後表示，最近各大商路都相對平穩，短期內市場可能主要受正常供需與城市價差影響。");
+ }
+ pieces.push(`她最後提醒你，下一個季節是${nextS}季。${seasonHints[nextS]}`);
+ const reminderPool=[
+  "如果你聽到的是『貨變多』，通常要小心價格走弱；如果是『買的人變多』，那就可能是提早布局的機會。",
+  "好商人不只是看今天的價格，而是先把貨帶到幾回合後會更缺貨的城市。",
+  "領地的產業優勢不會因一條消息消失，所以判斷時別忘了比較不同城鎮的固定價差。"
+ ];
+ pieces.push(reminderPool[game.round % reminderPool.length]);
+ let text=pieces.join("");
+ if(text.length>210) text=text.slice(0,207)+"……";
+ return text;
+}
+
+function pushClerkMessage(){
+ const msg = generateMarketRumor();
+ const record = {round:game.round, city:game.city, season:season(), text:msg};
+ game.clerkHistory.unshift(record);
+ game.latestClerkMessage = msg;
+}
+
+function useAP(n=1){
+ if(game.ap<n){addLog(`行動點不足，需要 ${n} AP。`,"bad");return false}
+ game.ap-=n;
+ return true;
+}
+
+function updateMarket(){
+ game.goods.forEach((g)=>{
+   const meanReversion=.09*((g.base-g.market)/g.base);
+   const momentum=.28*g.lastReturn;
+   const noise=rnd(-g.vol*.32,g.vol*.32);
+   const ret=clamp(meanReversion+momentum+noise,-.22,.22);
+   g.market=Math.max(g.base*.45,Math.round(g.market*(1+ret)));
+   g.lastReturn=ret;
+ });
+}
+
+function ambientRandomEvent(){
+ const roll=Math.random();
+ if(roll<.70){
+   if(!scheduledEventForRound(game.round)){
+     game.turnSummary = "本回合沒有額外突發事件，市場主要依基本面運作。";
+   }
+   return;
+ }
+ const pool=[
+   ()=>{
+     const bonus=Math.max(800,Math.min(3000,Math.round(game.cash*.04)));
+     game.cash+=bonus;
+     game.turnSummary = `你獲得一筆小型商業補助 ${money(bonus)}。`;
+     addLog(`獲得補助 ${money(bonus)}。`,"good");
+   },
+   ()=>{
+     game.ap+=1;
+     game.turnSummary = "熟客幫你處理了一些雜務，本回合額外 +1 AP。";
+     addLog("熟客協助，AP +1。","good");
+   }
+ ];
+ pool[Math.floor(Math.random()*pool.length)]();
+}
+
+function startGame(origin){
+ let init={cash:15000,debt:0,living:300,rep:0};
+ if(origin==="heir")init={cash:35000,debt:0,living:850,rep:8};
+ if(origin==="debtor")init={cash:50000,debt:45000,living:350,rep:-3};
+
+ game={
+   origin,round:1,city:0,cash:init.cash,debt:init.debt,living:init.living,rep:init.rep,
+   ap:5,storage:25,stores:0,staff:0,over:false,submitted:false,
+   goods:GOODS.map(g=>({...g,owned:0,costTotal:0,market:g.base,lastReturn:0})),
+   clerkHistory:[],
+   latestClerkMessage:"",
+   logs:[],
+   traveling:false,
+   jobsDone:{},
+   turnSummary:"你剛走進第一間貿易行會，櫃檯人員正等著接待你。"
+ };
+ selectedTown=0;
+ selectedPlace="trade";
+ buildFutureSchedule();
+ pushClerkMessage();
+ document.getElementById("overlay").style.display="none";
+ render();
+ addLog("你的商旅人生開始了。");
+}
+
+function renderMap(){
+ const board=document.getElementById("mapBoard");
+ board.innerHTML=`
+   <div class="seaWave" style="top:18%">≈≈≈</div>
+   <div class="seaWave" style="top:32%">≈≈≈</div>
+   <div class="seaWave" style="top:72%">≈≈≈</div>
+   <div class="mountainRange" style="left:22%;top:8%">▲ ▲ ▲ ▲ ▲</div>
+   <div class="mountainRange" style="left:28%;top:29%">▲ ▲ ▲</div>
+   <div class="forestPatch" style="left:43%;top:24%">♠ ♠ ♠ ♠ ♠</div>
+   <div class="forestPatch" style="left:65%;top:46%">♠ ♠ ♠ ♠</div>
+   <div class="riverLine" style="left:34%;top:35%;width:34%;transform:rotate(31deg)"></div>
+   <div class="terrainLabel" style="left:20%;top:5%">北境山脈</div>
+   <div class="terrainLabel" style="left:43%;top:18%">古王森林</div>
+   <div class="terrainLabel" style="left:1.5%;top:7%">西海</div>
+   <div class="terrainLabel" style="left:60%;top:77%">南方丘陵</div>
+   <div class="kingdomName">艾爾德蘭王國</div>
+   <div class="mapCompass"></div>
+ `;
+ // routes
+ const pairs=[[0,1],[0,2],[1,2],[1,3],[2,3]];
+ pairs.forEach(([a,b])=>{
+   const A=CITIES[a],B=CITIES[b];
+   const x1=A.x,y1=A.y,x2=B.x,y2=B.y;
+   const dx=x2-x1,dy=y2-y1;
+   const len=Math.sqrt(dx*dx+dy*dy);
+   const angle=Math.atan2(dy,dx)*180/Math.PI;
+   const d=document.createElement("div");
+   d.className="route";
+   d.style.left=`calc(${x1}% + 56px)`;
+   d.style.top=`calc(${y1}% + 44px)`;
+   d.style.width=`calc(${len}% - 10px)`;
+   d.style.transform=`rotate(${angle}deg)`;
+   board.appendChild(d);
+
+   const lab=document.createElement("div");
+   lab.style.position="absolute";
+   lab.style.left=`calc(${(x1+x2)/2}% + 35px)`;
+   lab.style.top=`calc(${(y1+y2)/2}% + 18px)`;
+   lab.style.zIndex="3";
+   lab.style.fontSize="10px";
+   lab.style.fontWeight="800";
+   lab.style.background="#fff8dd";
+   lab.style.border="2px solid #4a4132";
+   lab.style.padding="1px 4px";
+   lab.textContent=`${DIST[a][b]} AP`;
+   board.appendChild(lab);
+ });
+ CITIES.forEach((c,i)=>{
+   const d=document.createElement("div");
+   d.className="townNode"+((selectedTown===i)?" active":"");
+   d.style.left=`${c.x}%`;
+   d.style.top=`${c.y}%`;
+   d.dataset.act="selectTown";
+   d.dataset.city=i;
+   d.innerHTML=`<span class="townIcon">${c.icon}</span>
+   <div class="townName">${c.name}${game.city===i?" 📍":""}</div>
+   <div class="townMeta">${c.spec}<br>低價：${c.cheap}<br>高價：${c.expensive}</div>`;
+   board.appendChild(d);
+ });
+}
+
+
+function splitRumorIntoPages(text){
+ const sentences=(text.match(/[^。！？……]+[。！？]|[^。！？……]+……/g)||[text]).map(s=>s.trim()).filter(Boolean);
+ const pages=[];
+ let buf="";
+ sentences.forEach(s=>{
+   if((buf+s).length>72 && buf){
+     pages.push(buf);
+     buf=s;
+   }else{
+     buf+=s;
+   }
+ });
+ if(buf)pages.push(buf);
+ return pages;
+}
+
+function getClerkDialoguePages(townIndex){
+ const town=CITIES[townIndex];
+ if(townIndex!==game.city){
+   return [
+     `這裡是${town.name}的貿易行會。你現在人在${CITIES[game.city].name}，所以還不能在這裡辦理交易。`,
+     `${town.name}是${town.spec}。一般來說，${town.cheap}在這裡比較容易找到低價，而${town.expensive}往往能賣到較高價格。`,
+     `如果你想親自交易，請回到目前城鎮的馬車驛站，搭車前往${town.name}。`
+   ];
+ }
+ const rumorPages=splitRumorIntoPages(game.latestClerkMessage);
+ return [
+   `歡迎回來。這裡是${town.name}貿易行會的櫃檯，我是${town.clerk}。我先把今天聽到的消息告訴你。`,
+   ...rumorPages,
+   `以上就是目前掌握的情報。記得你可以到「行會消息紀錄」回頭查看。那麼，今天你想買什麼，或賣什麼呢？`
+ ];
+}
+
+function resetDialogue(){
+ dialoguePage=0;
+}
+
+function nextDialogue(){
+ const pages=getClerkDialoguePages(selectedTown);
+ if(dialoguePage<pages.length-1) dialoguePage++;
+ renderTownContent();
+}
+
+function prevDialogue(){
+ if(dialoguePage>0) dialoguePage--;
+ renderTownContent();
+}
+
+function replayDialogue(){
+ dialoguePage=0;
+ renderTownContent();
+}
+
+function renderTownContent(){
+ const box=document.getElementById("townContent");
+ if(selectedTown===null){box.innerHTML='<div class="small">請先從地圖上點一個城鎮。</div>';return;}
+ const town=CITIES[selectedTown];
+ document.getElementById("townTitle").textContent=`${town.name}｜城鎮內容`;
+ document.getElementById("townBadge").textContent= selectedTown===game.city ? "目前所在城鎮" : "可先查看，再到馬車驛站移動";
+
+ if(selectedPlace==="trade"){
+   const pages=getClerkDialoguePages(selectedTown);
+   dialoguePage=Math.max(0,Math.min(dialoguePage,pages.length-1));
+   const atLast=dialoguePage===pages.length-1;
+   box.innerHTML=`
+   <div class="tradeRoom">
+     <div class="shelf"></div>
+     <div class="npcBlock">
+       <div class="npcHair"></div>
+       <div class="npcHead"></div>
+       <div class="npcEyes"></div>
+       <div class="npcBody"></div>
+       <div class="npcBadge"></div>
+     </div>
+     <div class="counterDesk"></div>
+     <div class="dialogueRPG">
+       <div class="speakerName">${town.clerk}｜${town.name}貿易行會</div>
+       ${pages[dialoguePage]}
+       <div class="dialogueControls">
+         <span class="dialoguePage">${dialoguePage+1} / ${pages.length}</span>
+         <button class="secondary" data-act="dialoguePrev" ${dialoguePage===0?"disabled":""}>◀ 上一句</button>
+         <button class="secondary" data-act="dialogueReplay">↺ 重聽</button>
+         ${!atLast
+           ? `<button class="primary" data-act="dialogueNext">下一句 ▶</button>`
+           : `<button class="primary" data-act="dialogueReplay">再聽一次</button>`}
+       </div>
+     </div>
+   </div>
+   <div style="margin-top:12px">
+     <div class="flex">
+       <h2>行會貨單</h2>
+       <span class="pill">買一次或賣一次＝1 AP（數量不限）</span>
+     </div>
+     ${selectedTown===game.city
+       ? `<div class="tradePrompt">💬 ${town.clerk}：「請告訴我你想收多少貨，或要出清多少貨。」</div>${renderTradeTable()}`
+       : '<div class="small">你必須先抵達這個城鎮，才能在這裡交易。</div>'}
+   </div>`;
+   return;
+ }
+
+ if(selectedPlace==="jobs"){
+   if(selectedTown!==game.city){
+     box.innerHTML=`
+       <div class="dialogue" style="min-height:auto">
+         <b>📜 ${town.name}工作布告欄</b>
+         你目前人在${CITIES[game.city].name}。要接這裡的差事，必須先搭馬車抵達${town.name}。
+       </div>`;
+   }else{
+     box.innerHTML=renderJobs();
+   }
+   return;
+ }
+
+ if(selectedPlace==="carriage"){
+   let items = CITIES.map((c,i)=>{
+     if(i===selectedTown) return "";
+     const apCost = DIST[selectedTown][i];
+     const btn = (selectedTown===game.city && i!==game.city)
+       ? `<button class="purple" data-act="travel" data-from="${selectedTown}" data-to="${i}">🛞 出發</button>`
+       : (selectedTown!==game.city
+         ? `<button class="secondary" disabled>先到${town.name}</button>`
+         : `<button class="secondary" disabled>目前所在</button>`);
+     return `<div class="travelItem">
+       <div><span class="cart">🐴</span><b>${town.name} → ${c.name}</b><br><span class="small">路程：${apCost} AP｜${apCost===2?"中程":"長程"}馬車</span></div>
+       <div>${btn}</div>
+     </div>`;
+   }).join("");
+   box.innerHTML=`
+   <div class="stationScene">
+     <div class="stationHouse"></div>
+     <div class="stationSign">${town.name} 驛站</div>
+     <div class="stationCart">🐴🛒</div>
+     <div class="stationText">
+       <b>驛站馬車夫</b><br>
+       「今天路況還算可以。近的城鎮要 2 AP，最遠的路程要 3 AP。你如果確定目的地，我就替你套車。」
+     </div>
+   </div>
+   <div class="travelList" style="margin-top:12px">${items}</div>`;
+   return;
+ }
+
+ if(selectedPlace==="history"){
+   box.innerHTML=`
+   <div class="dialogue" style="min-height:auto">
+     <b>📜 行會行會消息紀錄</b>
+     這裡會保留你每回合在貿易行會聽到的市場耳語，方便回頭比對與推理。
+   </div>
+   <div class="historyBox" style="margin-top:12px">${renderHistory()}</div>`;
+   return;
+ }
+}
+
+function renderTradeTable(){
+ return `<table>
+   <thead><tr><th>商品</th><th>本地價格</th><th>市場定位</th><th>持有</th><th>數量</th><th>操作</th></tr></thead>
+   <tbody>
+   ${game.goods.map((g,i)=>{
+     let pos="一般市場", cls="small";
+     const prices=CITIES.map((c,ci)=>({ci,p:localPrice(i,ci)}));
+     const low=[...prices].sort((a,b)=>a.p-b.p)[0];
+     const high=[...prices].sort((a,b)=>b.p-a.p)[0];
+     if(game.city===low.ci){pos="產地低價";cls="good";}
+     else if(game.city===high.ci){pos="高價市場";cls="warnTxt";}
+     return `<tr>
+       <td><b>${g.name}</b><br><span class="small">${GOOD_DESC[i]}<br>持有均價 ${g.owned?money(avg(g)):"-"}</span></td>
+       <td><b>${money(localPrice(i))}</b></td>
+       <td><span class="${cls}">${pos}</span></td>
+       <td>${g.owned}</td>
+       <td><input id="q${i}" class="qty" type="number" min="1" value="1"></td>
+       <td>
+         <button class="buy" data-act="buy" data-i="${i}">買</button>
+         <button class="sell" data-act="sell" data-i="${i}">賣</button>
+       </td>
+     </tr>`;
+   }).join("")}
+   </tbody></table>`;
+}
+
+function renderHistory(){
+ if(!game.clerkHistory.length) return '<div class="small">目前還沒有櫃檯消息。</div>';
+ return game.clerkHistory.map(h=>`
+   <div class="historyItem">
+     <b>第 ${h.round} 回合｜${h.season}｜${CITIES[h.city].name}</b><br>
+     ${h.text}
+   </div>`).join("");
+}
+
+function buy(i){
+ if(game.over) return;
+ if(selectedTown!==game.city || selectedPlace!=="trade"){addLog("請先在目前所在城鎮的貿易行會交易。","bad");return;}
+ const q=Math.max(1,parseInt(document.getElementById(`q${i}`).value)||1);
+ if(used()+q>game.storage){addLog("倉庫不足。","bad");return;}
+ const cost=localPrice(i)*q;
+ if(cost>game.cash){addLog("現金不足。","bad");return;}
+ if(!useAP(1))return;
+ game.cash-=cost;
+ game.goods[i].owned+=q;
+ game.goods[i].costTotal+=cost;
+ game.rep+=.2;
+ addLog(`在${CITIES[game.city].name}買入 ${game.goods[i].name} × ${q}，花費 ${money(cost)}。`,"");
+ render();
+}
+
+function sell(i){
+ if(game.over) return;
+ if(selectedTown!==game.city || selectedPlace!=="trade"){addLog("請先在目前所在城鎮的貿易行會交易。","bad");return;}
+ const q=Math.max(1,parseInt(document.getElementById(`q${i}`).value)||1);
+ const g=game.goods[i];
+ if(q>g.owned){addLog("庫存不足。","bad");return;}
+ if(!useAP(1))return;
+ const revenue=localPrice(i)*q;
+ const basis=avg(g)*q;
+ const profit=revenue-basis;
+ game.cash+=revenue;
+ g.owned-=q;
+ g.costTotal-=basis;
+ if(g.owned===0)g.costTotal=0;
+ if(profit>0) game.rep += Math.min(2,profit/5000);
+ addLog(`賣出 ${g.name} × ${q}，${profit>=0?"獲利":"虧損"} ${money(Math.abs(profit))}。`,profit>=0?"good":"bad");
+ render();
+}
+
+function travel(from,to){
+ if(game.over||game.traveling)return;
+ if(from!==game.city || selectedPlace!=="carriage"){
+   addLog("你必須在目前所在城鎮的馬車驛站搭車。","bad");
+   return;
+ }
+ const apCost=DIST[from][to];
+ if(game.ap<apCost){
+   addLog(`行動點不足，這段路需要 ${apCost} AP。`,"bad");
+   return;
+ }
+
+ game.ap-=apCost;
+ game.traveling=true;
+ document.getElementById("ap").textContent=game.ap;
+
+ const board=document.getElementById("mapBoard");
+ board.classList.add("traveling");
+
+ const a=CITIES[from], b=CITIES[to];
+ const cart=document.createElement("div");
+ cart.className="cartSprite";
+ cart.innerHTML='<span class="horse">🐎</span><span class="wagon">🛒</span>';
+ cart.style.left=`calc(${a.x}% + 56px)`;
+ cart.style.top=`calc(${a.y}% + 44px)`;
+ cart.style.transitionDuration=(700+apCost*350)+"ms";
+
+ const banner=document.createElement("div");
+ banner.className="travelBanner";
+ banner.textContent=`🐴 前往 ${CITIES[to].name}｜消耗 ${apCost} AP`;
+
+ board.appendChild(cart);
+ board.appendChild(banner);
+
+ requestAnimationFrame(()=>{
+   requestAnimationFrame(()=>{
+     cart.style.left=`calc(${b.x}% + 56px)`;
+     cart.style.top=`calc(${b.y}% + 44px)`;
+   });
+ });
+
+ setTimeout(()=>{
+   game.city=to;
+   selectedTown=to;
+   selectedPlace="trade";
+   game.traveling=false;
+   dialoguePage=0;
+   addLog(`你乘著馬車從${CITIES[from].name}抵達${CITIES[to].name}，消耗 ${apCost} AP。`);
+   render();
+   const node=document.querySelector(`.townNode[data-city="${to}"]`);
+   if(node)node.classList.add("arrivalFlash");
+ },700+apCost*350+80);
+}
+
+
+function jobKey(cityIndex,jobIndex){
+ return `${game.round}-${cityIndex}-${jobIndex}`;
+}
+
+function doJob(jobIndex){
+ if(game.over)return;
+ if(selectedTown!==game.city || selectedPlace!=="jobs"){
+   addLog("你必須在目前所在城鎮的工作布告欄接差事。","bad");
+   return;
+ }
+ const job=JOBS[game.city][jobIndex];
+ if(!job)return;
+ const key=jobKey(game.city,jobIndex);
+ if(game.jobsDone[key]){
+   addLog("這份差事本回合已經做過了。","bad");
+   return;
+ }
+ if(!useAP(job.ap))return;
+
+ game.jobsDone[key]=true;
+ game.cash+=job.pay;
+ game.rep+=job.rep;
+ game.turnSummary=`你完成「${job.title}」，獲得 ${money(job.pay)}，消耗 ${job.ap} AP。`;
+ addLog(`完成差事「${job.title}」，收入 ${money(job.pay)}。`,"good");
+ render();
+}
+
+function renderJobs(){
+ const jobs=JOBS[selectedTown];
+ return `
+   <div class="jobScene">
+     <div class="jobNotice">
+       城裡缺人手。<br><br>
+       每份差事每回合只能做一次。
+     </div>
+     <div class="jobNpc">🧑‍🌾</div>
+     <div class="jobIntro">
+       <b>行會差事管理人</b><br>
+       「生意不一定天天都好做。如果手頭缺銀幣，可以接些臨時差事。報酬不會比做對一筆貿易高，但至少穩定。」
+     </div>
+   </div>
+   <div class="jobBoard">
+     ${jobs.map((job,i)=>{
+       const done=!!game.jobsDone[jobKey(selectedTown,i)];
+       return `<div class="jobCard ${done?"jobDone":""}">
+         <div>
+           <span class="jobIcon">${job.icon}</span>
+           <span class="jobTitle">${job.title}</span>
+           <div class="jobMeta">${job.desc}<br>
+             消耗：${job.ap} AP｜報酬：${money(job.pay)}｜聲望 +${job.rep}
+           </div>
+         </div>
+         <div>
+           <button class="${done?"secondary":"warn"}" data-act="job" data-job="${i}" ${done?"disabled":""}>
+             ${done?"本回合已完成":"接受差事"}
+           </button>
+         </div>
+       </div>`;
+     }).join("")}
+   </div>`;
+}
+
+function openStore(){
+ if(game.over)return;
+ const cost=28000+game.stores*5000;
+ if(game.cash<cost){addLog("資金不足。","bad");return;}
+ if(!useAP(1))return;
+ game.cash-=cost;game.stores++;game.rep+=4;
+ addLog(`你在${CITIES[game.city].name}開設了一間店鋪。`,"good");
+ render();
+}
+function hire(){
+ if(game.over)return;
+ const cost=11000+game.staff*3500;
+ if(game.cash<cost){addLog("資金不足。","bad");return;}
+ if(!useAP(1))return;
+ game.cash-=cost;game.staff++;
+ addLog("你雇用了一名員工。","good");
+ render();
+}
+function expand(){
+ if(game.over)return;
+ const cost=10000+(game.storage-25)*500;
+ if(game.cash<cost){addLog("資金不足。","bad");return;}
+ if(!useAP(1))return;
+ game.cash-=cost;game.storage+=10;
+ addLog("倉庫擴建 10 格。","good");
+ render();
+}
+function borrow(){
+ if(game.over)return;
+ if(game.debt>=100000){addLog("銀行拒絕追加貸款。","bad");return;}
+ game.cash+=20000;game.debt+=20000;
+ addLog("借款 $20,000。","warnTxt");
+ render();
+}
+function repay(){
+ if(game.over)return;
+ const amt=Math.min(10000,game.debt);
+ if(amt<=0){addLog("目前沒有負債。");return;}
+ if(game.cash<amt){addLog("現金不足。","bad");return;}
+ game.cash-=amt;game.debt-=amt;
+ addLog(`償還 ${money(amt)}。`,"good");
+ render();
+}
+
+function endRound(){
+ if(game.over)return;
+
+ const income=game.stores*(3200+game.staff*700);
+ if(income){game.cash+=income;addLog(`店鋪收入 ${money(income)}。`,"good");}
+
+ game.cash-=game.living;
+ if(game.cash<0){
+   game.debt += Math.abs(game.cash);
+   game.cash = 0;
+   addLog("生活費不足，債務增加。","bad");
+ }
+
+ if(game.debt>0){
+   const it=Math.round(game.debt*.025);
+   game.debt += it;
+   addLog(`利息增加 ${money(it)}。`,"warnTxt");
+ }
+
+ if(game.round>=MAX){finish();return;}
+
+ updateMarket();
+ game.round++;
+ game.ap = 5;
+ game.jobsDone={};
+ game.turnSummary = "新的一回合開始。";
+ const hadScheduled=applyScheduledEvent(game.round);
+ ambientRandomEvent();
+ pushClerkMessage();
+ dialoguePage=0;
+ render();
+}
+
+function finish(){
+ game.over=true;
+ const w=worth();
+ let title="普通商人";
+ if(w>=250000&&game.rep>=25&&game.stores>=2) title="🏆 商業帝國創辦人";
+ else if(w>=150000) title="💰 富豪商人";
+ else if(game.stores>=3) title="🏪 連鎖王";
+ else if(game.debt>w) title="💸 破產商人";
+
+ document.getElementById("turnSummary").innerHTML=
+ `<b>${title}</b><br>24 回合結束，最終淨資產 ${money(w)}。<br><br>
+ <input id="playerName" class="nameInput" maxlength="16" placeholder="輸入你的暱稱">
+ <button class="primary" style="margin-top:8px" data-act="submitScore">送上排行榜</button>`;
+ addLog(`${title}｜最終淨資產 ${money(w)}。`,w>=150000?"good":"");
+ render();
+}
+
+function renderLog(){
+ const box=document.getElementById("logBox");
+ box.innerHTML = game.logs.length ? game.logs.map(l=>`<div class="logItem ${l.cls||''}">${l.text}</div>`).join("") : '<div class="small">目前沒有紀錄。</div>';
+}
+
+function getRank(){
+ try{return JSON.parse(localStorage.getItem("merchantRankV6")||"[]")}catch(e){return[]}
+}
+function saveRank(arr){localStorage.setItem("merchantRankV6",JSON.stringify(arr))}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function submitScore(){
+ if(!game||!game.over||game.submitted)return;
+ const name=(document.getElementById("playerName")?.value||"匿名商人").trim()||"匿名商人";
+ const arr=getRank();
+ arr.push({name,worth:Math.round(worth()),rep:Math.round(game.rep),stores:game.stores,origin:originName()});
+ arr.sort((a,b)=>b.worth-a.worth);
+ saveRank(arr.slice(0,30));
+ game.submitted=true;
+ addLog("成績已加入本機排行榜。","good");
+ renderLeaderboard();
+}
+function renderLeaderboard(){
+ const arr=getRank();
+ const box=document.getElementById("leaderboard");
+ if(!arr.length){box.innerHTML='<div class="small">目前還沒有成績。</div>';return;}
+ box.innerHTML=arr.slice(0,10).map((r,i)=>`
+   <div class="rankItem">
+     <b>${i+1}. ${escapeHtml(r.name)}</b><br>
+     <span class="small">${r.origin}｜聲望 ${r.rep}｜${r.stores} 店</span><br>
+     <span class="good">${money(r.worth)}</span>
+   </div>`).join("");
+}
+
+function renderStatus(){
+ document.getElementById("status").innerHTML=`
+ 出身：${originName()}<br>
+ 負債：<b class="${game.debt>0?'bad':''}">${money(game.debt)}</b><br>
+ 生活費：${money(game.living)}/回合<br>
+ 店鋪：${game.stores}<br>
+ 員工：${game.staff}（只提高店鋪收入，不增加 AP）<br>
+ 倉庫：${used()}/${game.storage}<br>每回合基礎行動：固定 5 AP<br><br>
+ <b>本局提示：</b><br>
+ • 買一次或賣一次都只算 1 AP，不管數量多少。<br>
+ • 長距離馬車會消耗更多 AP。<br>
+ • 櫃檯消息可以在「行會消息紀錄」裡回看。`;
+}
+
+function render(){
+ if(!game)return;
+ document.getElementById("age").textContent=age()+"歲";
+ document.getElementById("round").textContent=`${game.round}/${MAX}`;
+ document.getElementById("city").textContent=CITIES[game.city].name;
+ document.getElementById("cash").textContent=money(game.cash);
+ document.getElementById("worth").textContent=money(worth());
+ document.getElementById("ap").textContent=game.ap;
+ document.getElementById("rep").textContent=Math.round(game.rep);
+ document.getElementById("stores").textContent=game.stores;
+ document.getElementById("turnSummary").innerHTML=game.turnSummary;
+ renderMap();
+ renderTownContent();
+ renderStatus();
+ renderLog();
+ renderLeaderboard();
+}
+
+document.addEventListener("click",e=>{
+ const el=e.target.closest("[data-act]");
+ if(!el) return;
+ const act=el.dataset.act;
+ if(act==="start") startGame(el.dataset.origin);
+ else if(act==="selectTown"){selectedTown=+el.dataset.city;selectedPlace="trade";resetDialogue();render();}
+ else if(act==="openPlace"){selectedPlace=el.dataset.place;resetDialogue();render();}
+ else if(act==="dialogueNext") nextDialogue();
+ else if(act==="dialoguePrev") prevDialogue();
+ else if(act==="dialogueReplay") replayDialogue();
+ else if(act==="job") doJob(+el.dataset.job);
+ else if(act==="buy") buy(+el.dataset.i);
+ else if(act==="sell") sell(+el.dataset.i);
+ else if(act==="travel") travel(+el.dataset.from,+el.dataset.to);
+ else if(act==="store") openStore();
+ else if(act==="hire") hire();
+ else if(act==="expand") expand();
+ else if(act==="end") endRound();
+ else if(act==="borrow") borrow();
+ else if(act==="repay") repay();
+ else if(act==="submitScore") submitScore();
+ else if(act==="restart") location.reload();
+});
+
+renderLeaderboard();
+document.documentElement.setAttribute("data-game-loaded","true");
+</script>
+</body>
+</html>
