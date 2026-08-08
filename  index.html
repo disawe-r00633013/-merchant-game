@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>商旅人生 V4：人生商戰</title>
+<style>
+:root{
+ --bg:#f3f5f8;--panel:#fff;--text:#1f2937;--muted:#6b7280;--line:#e5e7eb;
+ --accent:#2563eb;--good:#15803d;--bad:#b91c1c;--warn:#a16207;--purple:#6d28d9;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;color:var(--text)}
+.wrap{max-width:1320px;margin:auto;padding:16px}
+h1{margin:0;font-size:28px}.sub{margin:5px 0 14px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(8,1fr);gap:9px;margin-bottom:13px}
+.stat,.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 3px 12px rgba(0,0,0,.04)}
+.stat{padding:11px}.label{font-size:11px;color:var(--muted)}.value{font-size:19px;font-weight:800;margin-top:3px}
+.main{display:grid;grid-template-columns:2fr 1fr;gap:14px}.card{padding:14px}
+h2{font-size:17px;margin:0 0 9px}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.cityBtn{border:1px solid var(--line);background:#f8fafc;border-radius:9px;padding:8px 10px;cursor:pointer}
+.cityBtn.active{background:#e8f1ff;border-color:#93c5fd;color:#1d4ed8;font-weight:700}
+table{width:100%;border-collapse:collapse}th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:center}
+th{font-size:12px;color:var(--muted)}td:first-child,th:first-child{text-align:left}
+button{border:0;border-radius:9px;padding:7px 10px;font-weight:700;cursor:pointer}
+.buy{background:#dbeafe;color:#1d4ed8}.sell{background:#dcfce7;color:#15803d}.secondary{background:#eef2f7;color:#334155}
+.purple{background:#ede9fe;color:#6d28d9}.danger{background:#fee2e2;color:#991b1b}.action{width:100%;margin-top:7px;padding:10px;background:var(--accent);color:#fff}
+.qty{width:52px;padding:5px;border:1px solid var(--line);border-radius:7px;text-align:center}
+.small{font-size:12px;color:var(--muted);line-height:1.5}.good{color:var(--good);font-weight:700}.bad{color:var(--bad);font-weight:700}.warn{color:var(--warn);font-weight:700}
+.pill{display:inline-block;background:#eef2f7;border-radius:999px;padding:2px 7px;font-size:11px}
+.event{background:#fff8e7;border:1px solid #f5d798;border-radius:10px;padding:11px;line-height:1.55;min-height:80px}
+.choice{width:100%;display:block;margin-top:6px;background:#f3f4f6;color:#374151;text-align:left}
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}.log{height:190px;overflow:auto;background:#f8fafc;padding:8px;border-radius:9px;font-size:12px;line-height:1.55}
+.progress{height:7px;background:#e5e7eb;border-radius:999px;overflow:hidden}.progress>div{height:100%;background:var(--accent)}
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.58);display:flex;align-items:center;justify-content:center;padding:20px;z-index:10}
+.start{width:min(800px,100%);background:white;border-radius:18px;padding:20px}.origins{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.origin{border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer}.origin:hover{background:#f8fbff;border-color:#93c5fd}
+.map{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}.mapNode{padding:11px;border-radius:12px;background:#f8fafc;border:1px solid var(--line);text-align:center}
+.mapNode.active{background:#eaf2ff;border-color:#93c5fd}.chart{height:72px;display:flex;align-items:flex-end;gap:2px;padding-top:4px}
+.bar{flex:1;background:#cbd5e1;border-radius:3px 3px 0 0;min-width:4px}
+@media(max-width:950px){.stats{grid-template-columns:repeat(4,1fr)}.main{grid-template-columns:1fr}.origins{grid-template-columns:1fr}.map{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div id="overlay" class="overlay">
+ <div class="start">
+  <h1>商旅人生 V4：人生商戰</h1>
+  <div class="sub">從 18 歲開始，經歷 16 年人生。每 4 回合 = 1 年。</div>
+  <div class="origins">
+   <div class="origin" data-click="startGame('vendor')"><b>🧺 路邊小販</b><div class="small">錢少、無負債、聲望成長快。</div></div>
+   <div class="origin" data-click="startGame('heir')"><b>🏠 商人之子</b><div class="small">資金充足、人脈佳，但生活成本高。</div></div>
+   <div class="origin" data-click="startGame('debtor')"><b>💸 負債商人</b><div class="small">本金高、債務沉重，適合高風險玩法。</div></div>
+  </div>
+ </div>
+</div>
+
+<div class="wrap">
+ <h1>🧳 商旅人生 V4：人生商戰</h1>
+ <div class="sub">低買高賣只是開始。你還要處理事業、家庭、人脈、競爭與人生選擇。</div><div style="margin-bottom:12px;padding:10px;border-radius:10px;background:#eef6ff;border:1px solid #bfdbfe;font-size:13px">若你是在 ChatGPT 的檔案預覽畫面看到本頁，預覽器可能禁止 JavaScript。請將 HTML 儲存到「檔案」後，用 Safari／Chrome 開啟。</div>
+
+ <div class="stats">
+  <div class="stat"><div class="label">年齡</div><div id="age" class="value">-</div></div>
+  <div class="stat"><div class="label">年月</div><div id="time" class="value">-</div></div>
+  <div class="stat"><div class="label">城市</div><div id="city" class="value">-</div></div>
+  <div class="stat"><div class="label">現金</div><div id="cash" class="value">-</div></div>
+  <div class="stat"><div class="label">淨資產</div><div id="worth" class="value">-</div></div>
+  <div class="stat"><div class="label">行動點</div><div id="ap" class="value">-</div></div>
+  <div class="stat"><div class="label">聲望</div><div id="rep" class="value">-</div></div>
+  <div class="stat"><div class="label">家庭</div><div id="family" class="value">-</div></div>
+ </div>
+
+ <div class="main">
+  <section>
+   <div class="card">
+    <h2>城市地圖</h2><div id="map" class="map"></div>
+    <h2>市場</h2>
+    <table><thead><tr><th>商品</th><th>價格</th><th>持有</th><th>均價</th><th>數量</th><th>操作</th></tr></thead><tbody id="market"></tbody></table>
+   </div>
+
+   <div class="card" style="margin-top:14px">
+    <h2>事業與人生</h2>
+    <div id="business"></div>
+   </div>
+
+   <div class="card" style="margin-top:14px">
+    <h2>競爭對手</h2>
+    <div id="rival"></div>
+   </div>
+  </section>
+
+  <aside>
+   <div class="card">
+    <h2>本回合事件</h2>
+    <div id="event" class="event">選擇出身開始。</div><div id="choices"></div>
+    <button class="action" data-click="endRound()">結束回合</button>
+    <button class="action secondary" data-click="borrow()">借款 $20,000</button>
+    <button class="action secondary" data-click="repay()">還款 $10,000</button>
+    <button class="action danger" data-click="location.reload()">重新開始</button>
+   </div>
+
+   <div class="card" style="margin-top:14px">
+    <h2>角色狀態</h2><div id="status" class="small"></div>
+   </div>
+
+   <div class="card" style="margin-top:14px">
+    <h2>價格走勢</h2>
+    <div class="small">目前商品：<select id="chartSelect" onchange="renderChart()"></select></div>
+    <div id="chart" class="chart"></div>
+   </div>
+
+   <div class="card" style="margin-top:14px">
+    <h2>紀錄</h2><div id="log" class="log"></div>
+   </div>
+  </aside>
+ </div>
+</div>
+
+<script>
+const MAX=64;
+const GOODS=[
+{name:"🍎 蘋果",base:120,vol:.18},{name:"☕ 咖啡豆",base:260,vol:.22},{name:"🧸 玩具",base:480,vol:.20},
+{name:"📱 二手機",base:1900,vol:.26},{name:"💊 藥材",base:820,vol:.24},{name:"💎 寶石",base:4600,vol:.34}
+];
+const CITIES=[
+{name:"港城",mod:[.82,1.07,1.12,.98,1.10,1.20],travel:700},
+{name:"山城",mod:[1.05,.86,.96,1.10,.80,1.08],travel:900},
+{name:"科技城",mod:[1.16,1.03,1.08,.76,1.02,1.24],travel:1200},
+{name:"王都",mod:[1.12,1.18,.90,1.17,1.14,.84],travel:1500}
+];
+let game=null;
+function money(n){return "$"+Math.round(n).toLocaleString("zh-TW")}
+function rnd(a,b){return Math.random()*(b-a)+a}
+function avg(g){return g.owned?g.costTotal/g.owned:0}
+function price(i,c=game.city){return Math.max(10,Math.round(game.goods[i].global*CITIES[c].mod[i]))}
+function used(){return game.goods.reduce((s,g)=>s+g.owned,0)}
+function worth(){return game.cash+game.goods.reduce((s,g,i)=>s+g.owned*price(i),0)+game.stores*25000-game.debt}
+function age(){return 18+Math.floor((game.round-1)/4)}
+function season(){return ["春","夏","秋","冬"][(game.round-1)%4]}
+function addLog(t,cls=""){const d=document.createElement("div");if(cls)d.className=cls;d.textContent=`${age()}歲 ${season()}｜${t}`;document.getElementById("log").prepend(d)}
+function useAP(){if(game.ap<=0){addLog("行動點不足。","bad");return false}game.ap--;return true}
+function startGame(origin){
+ let init={cash:15000,debt:0,living:300,rep:0};
+ if(origin==="heir")init={cash:35000,debt:0,living:850,rep:8};
+ if(origin==="debtor")init={cash:50000,debt:45000,living:350,rep:-3};
+ game={origin,round:1,city:0,cash:init.cash,debt:init.debt,living:init.living,rep:init.rep,ap:3,storage:25,stores:0,staff:0,partner:false,children:0,health:100,rival:20000,over:false,
+ goods:GOODS.map(g=>({...g,owned:0,costTotal:0,global:g.base,history:[g.base]}))};
+ document.getElementById("overlay").style.display="none";document.getElementById("log").innerHTML="";
+ const s=document.getElementById("chartSelect");s.innerHTML=GOODS.map((g,i)=>`<option value="${i}">${g.name}</option>`).join("");
+ setEvent("人生開始","18 歲，你第一次真正踏入市場。",[]);render();
+}
+function setEvent(t,txt,chs=[]){document.getElementById("event").innerHTML=`<strong>${t}</strong><br>${txt}`;const b=document.getElementById("choices");b.innerHTML="";chs.forEach(c=>{const x=document.createElement("button");x.className="choice";x.textContent=c.label;x.onclick=()=>{c.run();b.innerHTML="";render()};b.appendChild(x)})}
+function buy(i){const q=Math.max(1,parseInt(document.getElementById("q"+i).value)||1);if(used()+q>game.storage)return addLog("倉庫不足。","bad");const c=price(i)*q;if(c>game.cash)return addLog("現金不足。","bad");if(!useAP())return;game.cash-=c;game.goods[i].owned+=q;game.goods[i].costTotal+=c;game.rep+=.2;addLog(`買入 ${game.goods[i].name} ×${q}`);render()}
+function sell(i){const q=Math.max(1,parseInt(document.getElementById("q"+i).value)||1),g=game.goods[i];if(q>g.owned)return addLog("庫存不足。","bad");if(!useAP())return;const a=avg(g),rev=price(i)*q,p=rev-a*q;game.cash+=rev;g.owned-=q;g.costTotal-=a*q;if(g.owned===0)g.costTotal=0;if(p>0)game.rep+=Math.min(2,p/5000);addLog(`賣出 ${g.name}，${p>=0?"獲利":"虧損"} ${money(Math.abs(p))}`,p>=0?"good":"bad");render()}
+function travel(c){if(c===game.city)return;const cost=CITIES[c].travel;if(game.cash<cost)return addLog("旅費不足。","bad");if(!useAP())return;game.cash-=cost;game.city=c;addLog(`前往 ${CITIES[c].name}`);render()}
+function openStore(){const c=30000+game.stores*5000;if(game.cash<c)return addLog("資金不足。","bad");if(!useAP())return;game.cash-=c;game.stores++;game.rep+=4;addLog("開設新店鋪。","good");render()}
+function hire(){const c=12000+game.staff*4000;if(game.cash<c)return addLog("資金不足。","bad");if(!useAP())return;game.cash-=c;game.staff++;addLog("雇用一名員工。","good");render()}
+function expand(){const c=12000+(game.storage-25)*600;if(game.cash<c)return addLog("資金不足。","bad");if(!useAP())return;game.cash-=c;game.storage+=10;addLog("倉庫擴建。","good");render()}
+function seekPartner(){if(game.partner)return;if(!useAP())return;const chance=.35+Math.min(.35,game.rep/100);if(Math.random()<chance){game.partner=true;game.living+=500;game.rep+=3;setEvent("新的關係","你遇見了願意陪你一起走的人。",[]);addLog("開始一段穩定關係。","good")}else addLog("這次沒有遇到合適的人。")}
+function haveChild(){if(!game.partner||game.children>=3)return;if(game.cash<5000)return addLog("目前財務不適合。","bad");if(!useAP())return;game.cash-=5000;game.children++;game.living+=450;game.rep+=2;addLog("家庭新增一名孩子。","good");render()}
+function borrow(){if(game.debt>=100000)return addLog("銀行拒絕追加貸款。","bad");game.cash+=20000;game.debt+=20000;addLog("借款 $20,000。","warn");render()}
+function repay(){const a=Math.min(10000,game.debt);if(a<=0)return addLog("沒有負債。");if(game.cash<a)return addLog("現金不足。","bad");game.cash-=a;game.debt-=a;addLog(`償還 ${money(a)}。`,"good");render()}
+function randomEvent(){
+ const x=Math.random();
+ if(x<.25){const i=Math.floor(Math.random()*GOODS.length),up=Math.random()>.5,m=up?rnd(1.3,1.65):rnd(.58,.78);game.goods[i].global=Math.round(game.goods[i].global*m);setEvent(up?"搶購潮":"拋售潮",`${GOODS[i].name}${up?"價格大漲":"價格大跌"}。`,[])}
+ else if(x<.45){setEvent("競爭對手出招","競爭商人搶走一批客戶。",[{label:"降價應戰（花 $3,000）",run:()=>{if(game.cash>=3000){game.cash-=3000;game.rep+=2;game.rival-=1500;addLog("成功守住客戶。","good")}}},{label:"不理會",run:()=>{game.rep-=1;game.rival+=1000;addLog("聲望稍降。","bad")}}])}
+ else if(x<.60&&!game.partner&&age()>=21){setEvent("朋友介紹","朋友說認識一位很適合你的人。",[{label:"去見面",run:()=>seekPartner()},{label:"專心工作",run:()=>addLog("你選擇把時間留給事業。")}])}
+ else if(x<.75&&game.partner){setEvent("家庭時間","家人希望你今天不要工作。",[{label:"陪家人",run:()=>{game.rep+=1;game.health=Math.min(100,game.health+5);addLog("家庭關係更穩定。","good")}},{label:"繼續工作",run:()=>{game.health-=3;addLog("你選擇工作，壓力增加。","warn")}}])}
+ else setEvent("平靜季節","沒有重大事件。",[]);
+}
+function endRound(){
+ if(!game||game.over)return;
+ const income=game.stores*(2200+game.staff*500);if(income){game.cash+=income;addLog(`店鋪收入 ${money(income)}。`,"good")}
+ game.cash-=game.living;if(game.cash<0){game.debt+=Math.abs(game.cash);game.cash=0;addLog("生活費不足，債務增加。","bad")}
+ if(game.debt>0){const it=Math.round(game.debt*.025);game.debt+=it;addLog(`利息 ${money(it)}。`,"warn")}
+ game.rival*=1+rnd(.02,.07);game.health=Math.max(0,game.health-rnd(0,2));
+ if(game.round>=MAX||game.health<=0){finish();return}
+ game.round++;game.ap=3+Math.floor(game.staff/2);
+ game.goods.forEach(g=>{g.global=Math.max(20,Math.round(g.global*(1+rnd(-g.vol,g.vol))));g.history.push(g.global)});
+ randomEvent();render()
+}
+function finish(){
+ game.over=true;const w=worth();let title="普通商人";
+ if(w>=500000&&game.rep>=40&&game.stores>=4)title="🏆 商業帝國創辦人";
+ else if(w>=300000)title="💰 富豪商人";
+ else if(game.stores>=5)title="🏪 連鎖王";
+ else if(game.partner&&game.children>=2&&w>=150000)title="👨‍👩‍👧‍👦 家庭與事業兼得";
+ else if(game.debt>w)title="💸 破產商人";
+ setEvent(title,`你在 ${age()} 歲時結束這段商旅人生，最終淨資產 ${money(w)}。`,[]);addLog(title,w>200000?"good":"");render()
+}
+function renderChart(){
+ if(!game)return;const i=parseInt(document.getElementById("chartSelect").value||0),h=game.goods[i].history.slice(-20),mx=Math.max(...h),mn=Math.min(...h),box=document.getElementById("chart");box.innerHTML="";
+ h.forEach(v=>{const b=document.createElement("div");b.className="bar";b.style.height=(15+55*(v-mn)/Math.max(1,mx-mn))+"px";b.title=money(v);box.appendChild(b)})
+}
+function render(){
+ if(!game)return;
+ document.getElementById("age").textContent=age()+"歲";document.getElementById("time").textContent=`第${Math.ceil(game.round/4)}年・${season()}`;
+ document.getElementById("city").textContent=CITIES[game.city].name;document.getElementById("cash").textContent=money(game.cash);document.getElementById("worth").textContent=money(worth());
+ document.getElementById("ap").textContent=game.ap;document.getElementById("rep").textContent=Math.round(game.rep);document.getElementById("family").textContent=game.partner?`伴侶＋${game.children}孩`:"單身";
+ const map=document.getElementById("map");map.innerHTML="";CITIES.forEach((c,i)=>{const d=document.createElement("div");d.className="mapNode"+(i===game.city?" active":"");d.innerHTML=`<b>${c.name}</b><div class="small">${i===game.city?"目前所在":`旅費 ${money(c.travel)}`}</div>`;d.onclick=()=>travel(i);map.appendChild(d)});
+ const tb=document.getElementById("market");tb.innerHTML="";game.goods.forEach((g,i)=>{const tr=document.createElement("tr");tr.innerHTML=`<td><b>${g.name}</b></td><td>${money(price(i))}</td><td>${g.owned}</td><td>${g.owned?money(avg(g)):"-"}</td><td><input id="q${i}" class="qty" type="number" min="1" value="1"></td><td><button class="buy" data-click="buy(${i})">買</button> <button class="sell" data-click="sell(${i})">賣</button></td>`;tb.appendChild(tr)});
+ document.getElementById("business").innerHTML=`
+ <div class="row"><div><b>🏪 開店</b><div class="small">店鋪 ${game.stores} 間</div></div><button class="purple" data-click="openStore()">開店</button></div>
+ <div class="row"><div><b>👷 雇員工</b><div class="small">員工 ${game.staff} 人</div></div><button class="purple" data-click="hire()">雇用</button></div>
+ <div class="row"><div><b>📦 擴倉</b><div class="small">${used()} / ${game.storage}</div></div><button class="purple" data-click="expand()">擴建</button></div>
+ <div class="row"><div><b>❤️ 尋找伴侶</b><div class="small">${game.partner?"已有穩定伴侶":"需要 1 行動點"}</div></div><button class="secondary" data-click="seekPartner()" ${game.partner?"disabled":""}>認識人</button></div>
+ <div class="row"><div><b>👶 生育</b><div class="small">孩子 ${game.children} 人</div></div><button class="secondary" data-click="haveChild()" ${!game.partner||game.children>=3?"disabled":""}>規劃孩子</button></div>`;
+ document.getElementById("rival").innerHTML=`<div class="small">競爭對手估計資產：<b>${money(game.rival)}</b></div><div class="progress"><div style="width:${Math.min(100,game.rival/Math.max(1,worth())*50)}%"></div></div>`;
+ document.getElementById("status").innerHTML=`負債：<b class="${game.debt>0?"bad":""}">${money(game.debt)}</b><br>健康：${Math.round(game.health)}/100<br>生活費：${money(game.living)}/季<br>店鋪：${game.stores}<br>員工：${game.staff}<br>倉庫：${used()}/${game.storage}`;
+ renderChart();
+}
+
+document.addEventListener("click", function(e){
+  const el = e.target.closest("[data-click]");
+  if(!el) return;
+  const code = el.getAttribute("data-click");
+  try {
+    Function(code)();
+  } catch(err) {
+    console.error(err);
+    alert("按鈕執行失敗：" + err.message);
+  }
+});
+
+</script>
+</body>
+</html>
